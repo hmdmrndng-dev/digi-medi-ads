@@ -1,0 +1,53 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Expenses {
+  id                String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  description       String?
+  tags              String[]
+  amount            Decimal?  @db.Decimal(10, 2)
+  modeOfPayment     String?
+  notes             String?
+  taxClassification String?
+  createdAt         DateTime  @default(now()) @db.Timestamp(6)
+  updatedAt         DateTime? @db.Timestamp(6)
+}
+
+model Request {
+  id                    String                  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  productName           String
+  numOfOrderedStock     Int
+  status                String?
+  deliverBy             String?
+  receivedBy            String?
+  location              String?
+  deliveredAt           DateTime?               @db.Timestamp(6)
+  purchaseOrderId       String?
+  amountDue             Decimal?                @db.Decimal(10, 2)
+  createdAt             DateTime                @default(now()) @db.Timestamp(6)
+  updatedAt             DateTime?               @db.Timestamp(6)
+  ServiceInvoicePayment ServiceInvoicePayment[]
+}
+
+model ServiceInvoicePayment {
+  id               String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  request_id       String    @db.Uuid
+  serviceInvoiceId String
+  amountPaid       Decimal?  @db.Decimal(10, 2)
+  createdAt        DateTime  @default(now()) @db.Timestamp(6)
+  updatedAt        DateTime? @db.Timestamp(6)
+  Request          Request   @relation(fields: [request_id], references: [id])
+}
+
+model User {
+  id       String  @id @db.Uuid
+  email    String? @unique
+  username String?
+  role     String  @default("user")
+}
