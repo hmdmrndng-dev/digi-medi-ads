@@ -1,4 +1,7 @@
 // src/components/bookkeeping/RequestPage.tsx
+"use client"
+
+import { useRouter } from "next/navigation"
 import {
   Table,
   TableBody,
@@ -10,9 +13,9 @@ import {
 } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 
-// 1. Define the shape of your data based on your Prisma model
 type RequestItem = {
   id: string
+  productId: number
   productName: string
   numOfOrderedStock: number
   status: string | null
@@ -21,11 +24,10 @@ type RequestItem = {
   location: string | null
   deliveredAt: Date | null
   purchaseOrderId: string | null
-  amountDue: any // Prisma Decimals are usually passed as any or string, we'll convert it
+  amountDue: any
   createdAt: Date
 }
 
-// 2. Helper functions
 const formatCurrency = (amount: number | null | undefined) => {
   if (!amount) return "-"
   return new Intl.NumberFormat("en-US", {
@@ -42,8 +44,9 @@ const getStatusBadge = (status: string | null) => {
   return <Badge variant="outline">{status || "Unknown"}</Badge>
 }
 
-// 3. The Component accepts the data as a prop
 export function RequestTable({ requests }: { requests: RequestItem[] }) {
+  const router = useRouter() // <-- 3. Initialize the router
+
   return (
     <div className="space-y-6">
       <div>
@@ -69,7 +72,15 @@ export function RequestTable({ requests }: { requests: RequestItem[] }) {
           </TableHeader>
           <TableBody>
             {requests.map((req) => (
-              <TableRow key={req.id}>
+              <TableRow
+                key={req.id}
+                // 4. Add the onClick handler and pointer styles
+                onClick={() => {
+                  console.log("Clicked ID is:", req.productId);
+                  router.push(`/bookkeeping/requests/${req.productId}`)
+                }}
+                className="cursor-pointer hover:bg-muted/50 transition-colors"
+              >
                 <TableCell className="font-medium">
                   {req.productName}
                   <div className="text-xs text-muted-foreground">
@@ -82,9 +93,9 @@ export function RequestTable({ requests }: { requests: RequestItem[] }) {
                 <TableCell>
                   {req.deliverBy || "-"}
                   {req.receivedBy && (
-                     <div className="text-xs text-muted-foreground">
-                       Rcvd: {req.receivedBy}
-                     </div>
+                    <div className="text-xs text-muted-foreground">
+                      Rcvd: {req.receivedBy}
+                    </div>
                   )}
                 </TableCell>
                 <TableCell className="text-right">
@@ -99,7 +110,7 @@ export function RequestTable({ requests }: { requests: RequestItem[] }) {
                 </TableCell>
               </TableRow>
             ))}
-            
+
             {requests.length === 0 && (
               <TableRow>
                 <TableCell colSpan={7} className="h-24 text-center text-muted-foreground">
