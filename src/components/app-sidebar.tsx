@@ -32,8 +32,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
                   <GalleryVerticalEnd className="size-4" />
                 </div>
-                <div className="flex flex-col gap-0.5 leading-none">
-                  <span className="font-extrabold text-4xl">dma corp.</span>
+                <div className="flex gap-0.5 leading-none">
+                  <span className="font-extrabold text-2xl">dma corp.</span>
                 </div>
               </Link>
             </SidebarMenuButton>

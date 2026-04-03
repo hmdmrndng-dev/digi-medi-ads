@@ -1,9 +1,23 @@
 // src/app/bookkeeping/(protected)/requests/page.tsx
 
-export default function Page() {
+// 1. Import your Prisma client
+
+// 2. Import your new separated UI component
+import { RequestTable } from "@/components/bookkeeping/RequestPage"
+import { prisma } from "@/lib/prisma";
+export default async function Page() {
+
+    // 3. Fetch data directly from the database
+    const requests = await prisma.request.findMany({
+        orderBy: {
+            createdAt: 'desc'
+        }
+    });
+
     return (
         <>
-        
+            {/* 4. Pass the data to your UI component */}
+            <RequestTable requests={requests} />
         </>
     )
 }
