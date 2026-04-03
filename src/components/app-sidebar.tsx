@@ -2,12 +2,7 @@
 
 import * as React from "react"
 import {
-  Frame,
   GalleryVerticalEnd,
-  Map,
-  PieChart,
-  Settings2,
-  SquareTerminal,
 } from "lucide-react"
 
 import {
@@ -22,64 +17,9 @@ import {
 } from "@/components/ui/sidebar"
 import { NavUser } from "./nav/user"
 import { NavMain } from "./nav/main"
-import { IconBook } from "@tabler/icons-react"
 import Link from "next/link"
 
-const data = {
-  user: {
-    name: "shadcn",
-    email: "m@example.com",
-    avatar: "/avatars/shadcn.jpg",
-  },
-  navMain: [
-    {
-      title: "Digital Media Advertising",
-      url: "#",
-      icon: SquareTerminal,
-      isActive: true,
-      items: [
-        {
-          title: "Home",
-          url: "#",
-        },
-        {
-          title: "About us",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "Bookkeeping",
-      url: "#",
-      icon: IconBook,
-      items: [
-        {
-          title: "Dashboard",
-          url: "#",
-        },
-        {
-          title: "Requests",
-          url: "#",
-        },
-        {
-          title: "Expenses",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "Settings",
-      url: "#",
-      icon: Settings2,
-      items: [
-        {
-          title: "General",
-          url: "#",
-        },
-      ],
-    },
-  ],
-}
+import { navData as data } from "@/config/menu"
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
@@ -93,7 +33,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                   <GalleryVerticalEnd className="size-4" />
                 </div>
                 <div className="flex flex-col gap-0.5 leading-none">
-                  <span className="font-medium">Digital Media Advertising</span>
+                  <span className="font-extrabold text-4xl">dma corp.</span>
                 </div>
               </Link>
             </SidebarMenuButton>

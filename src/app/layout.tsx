@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 import { TooltipProvider } from "@/components/ui/tooltip"
+import { AppHeader } from "@/components/app-header";
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-sans' });
 
@@ -37,7 +38,8 @@ export default function RootLayout({
         <TooltipProvider>
           <SidebarProvider>
             <AppSidebar />
-            <main>
+            <main className="flex flex-1 flex-col overflow-hidden">
+              <AppHeader />
               {children}
             </main>
           </SidebarProvider>
