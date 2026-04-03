@@ -1,8 +1,5 @@
 // src/app/bookkeeping/(protected)/requests/page.tsx
 
-// 1. Import your Prisma client
-
-// 2. Import your new separated UI component
 import { RequestTable } from "@/components/bookkeeping/RequestPage"
 import { prisma } from "@/lib/prisma";
 export default async function Page() {
