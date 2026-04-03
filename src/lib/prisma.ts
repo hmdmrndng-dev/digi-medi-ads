@@ -1,10 +1,13 @@
 import "dotenv/config";
-import { PrismaPg } from "@prisma/adapter-pg";
-import { PrismaClient } from "@/generated/prisma/client";
+import { PrismaPg } from '@prisma/adapter-pg'
+import { PrismaClient } from '@/generated/prisma/client'
 
 const connectionString = `${process.env.POSTGRES_URL_NON_POOLING}`;
 
-const adapter = new PrismaPg({ connectionString });
+const adapter = new PrismaPg({ 
+  connectionString,
+  ssl: { rejectUnauthorized: false } 
+});
 const prisma = new PrismaClient({ adapter });
 
 export { prisma };
