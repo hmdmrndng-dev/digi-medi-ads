@@ -1,9 +1,9 @@
-// src/app/bookkeeping/(protected)/dashboard/page.tsx
+// src/app/bookkeeping/(protected)/financial/page.tsx
 
 export default function Page() {
     return (
         <>
-        dashboard
+        financial
         </>
     )
 }

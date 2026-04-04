@@ -1,10 +1,9 @@
-// src/app/bookkeeping/(protected)/page.tsx
-
+// src/app/bookkeeping/(protected)/expense/page.tsx
 
 export default function Page() {
     return (
         <>
-
+            expense
         </>
     )
 }

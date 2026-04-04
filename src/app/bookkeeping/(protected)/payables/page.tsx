@@ -1,9 +1,9 @@
-// src/app/bookkeeping/(protected)/requests/[id]/page.tsx
+// src/app/bookkeeping/(protected)/payables/page.tsx
 
 export default function Page() {
     return (
         <>
-            helloe
+            payables
         </>
     )
 }

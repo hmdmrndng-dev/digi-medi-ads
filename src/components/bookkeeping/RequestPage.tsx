@@ -74,9 +74,7 @@ export function RequestTable({ requests }: { requests: RequestItem[] }) {
             {requests.map((req) => (
               <TableRow
                 key={req.id}
-                // 4. Add the onClick handler and pointer styles
                 onClick={() => {
-                  console.log("Clicked ID is:", req.productId);
                   router.push(`/bookkeeping/requests/${req.productId}`)
                 }}
                 className="cursor-pointer hover:bg-muted/50 transition-colors"

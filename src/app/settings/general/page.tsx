@@ -1,9 +1,10 @@
-// src/app/bookkeeping/(protected)/expenses/page.tsx
+// src/app/settings/general/page.tsx
+
 
 export default function Page() {
     return (
         <>
-        
+            settings general
         </>
     )
 }

@@ -26,7 +26,7 @@ model Expenses {
 
 model Request {
   id                String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  productId         Int       @default(autoincrement())
+  projectCode       String    @unique
   productName       String
   numOfOrderedStock Int
   status            String?
