@@ -29,8 +29,8 @@ model Request {
   projectCode       String    @unique
   productName       String
   numOfOrderedStock Int
-  status            String?
-  deliverBy         String?
+  status            String    @default("pending")
+  courier           String?
   receivedBy        String?
   location          String?
   deliveredAt       DateTime? @db.Timestamp(6)
