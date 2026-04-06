@@ -25,32 +25,41 @@ model Expenses {
 }
 
 model Request {
-  id                String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  projectCode       String    @unique
+  id              String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  projectCode     String    @unique
+  projectType     String
+  requestor       String?
+  storeName       String?
+  deliveryStatus  String    @default("pending")
+  deliveryReceipt String?
+  deliveryDate    DateTime? @db.Timestamp(6)
+  purchaseOrderId String?
+  amountDue       Decimal?  @db.Decimal(10, 2)
+  createdAt       DateTime  @default(now()) @db.Timestamp(6)
+  updatedAt       DateTime? @db.Timestamp(6)
+
+  items                 RequestItem[]
+  serviceInvoicePayment ServiceInvoicePayment[]
+}
+
+model RequestItem {
+  id                String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   productName       String
   numOfOrderedStock Int
-  status            String    @default("pending")
-  courier           String?
-  receivedBy        String?
-  location          String?
-  deliveredAt       DateTime? @db.Timestamp(6)
-  purchaseOrderId   String?
-  amountDue         Decimal?  @db.Decimal(10, 2)
-  createdAt         DateTime  @default(now()) @db.Timestamp(6)
-  updatedAt         DateTime? @db.Timestamp(6)
 
-  serviceInvoicePayment ServiceInvoicePayment[]
+  request_id String  @db.Uuid
+  request    Request @relation(fields: [request_id], references: [id], onDelete: Cascade)
 }
 
 model ServiceInvoicePayment {
   id               String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  request_id       String    @db.Uuid
   serviceInvoiceId String
   amountPaid       Decimal?  @db.Decimal(10, 2)
   createdAt        DateTime  @default(now()) @db.Timestamp(6)
   updatedAt        DateTime? @db.Timestamp(6)
 
-  request Request @relation(fields: [request_id], references: [id])
+  request_id String  @db.Uuid
+  request    Request @relation(fields: [request_id], references: [id], onDelete: Cascade)
 }
 
 model User {
