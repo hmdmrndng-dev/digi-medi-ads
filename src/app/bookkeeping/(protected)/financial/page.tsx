@@ -17,17 +17,15 @@ export default async function Page() {
     const nextNumber = currentYearCount + 1;
     const expectedProjectCode = `${currentYear}-${String(nextNumber).padStart(4, '0')}`;
 
-    // 1. Fetch requests AND include the nested items
     const rawRequests = await prisma.request.findMany({
         orderBy: {
             createdAt: 'desc'
         },
         include: {
-            items: true // <-- Required to get the products for the table
+            items: true 
         }
     });
 
-    // 2. Map to match the new RequestData type in RequestTable.tsx
     const safeRequests = rawRequests.map((req) => ({
         id: req.id,
         projectCode: req.projectCode,
@@ -37,10 +35,8 @@ export default async function Page() {
         deliveryStatus: req.deliveryStatus,
         deliveryDate: req.deliveryDate || null,
         purchaseOrderId: req.purchaseOrderId || null,
-        // Convert Prisma Decimal to standard Number for the client component
         amountDue: req.amountDue ? Number(req.amountDue) : null,
         createdAt: req.createdAt,
-        // Pass down the nested items array
         items: req.items.map(item => ({
             productName: item.productName,
             numOfOrderedStock: item.numOfOrderedStock,

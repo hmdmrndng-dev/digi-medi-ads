@@ -41,14 +41,14 @@ export function AppHeader() {
   }
 
   let formattedTail = tailSegment;
-  /*
-    if (tailSegment === "create") {
-      formattedTail = "Create New";
-    } else if (tailSegment && tailSegment.length > 10) {
-      // If it's a massive UUID, slice it. Otherwise, leave the number as is.
-      formattedTail = `${tailSegment.slice(0, 8)}...`;
-    }
-  */
+
+  if (tailSegment === "create") {
+    formattedTail = "Create New";
+  } else if (tailSegment && tailSegment.length > 10) {
+    // If it's a massive UUID, slice it. Otherwise, leave the number as is.
+    formattedTail = `${tailSegment.slice(0, 8)}...`;
+  }
+
 
   return (
     <header className="flex h-16 shrink-0 items-center gap-2 border-b bg-background px-4">

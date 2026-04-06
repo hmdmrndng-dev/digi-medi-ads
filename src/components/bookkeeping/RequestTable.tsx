@@ -1,7 +1,6 @@
 // src/components/bookkeeping/RequestPage.tsx
 "use client"
 
-import { useRouter } from "next/navigation"
 import {
   Table,
   TableBody,
@@ -12,8 +11,10 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
+import { ViewRequestDialog } from "./ViewRequestDialog";
 
-// 1. Updated Type to match the new Prisma Schema including nested items
+// Adjust this import path to exactly where you saved the ViewRequestDialog
+
 type RequestData = {
   id: string;
   projectCode: string;
@@ -23,7 +24,7 @@ type RequestData = {
   deliveryStatus: string;
   deliveryDate: Date | null;
   purchaseOrderId: string | null;
-  amountDue: any; // Decimal from Prisma usually comes in as any/Decimal depending on how it's serialized
+  amountDue: any;
   createdAt: Date;
   items: {
     productName: string;
@@ -48,7 +49,7 @@ const getStatusBadge = (status: string | null) => {
 }
 
 export function RequestTable({ requests }: { requests: RequestData[] }) {
-  const router = useRouter()
+  // 1. Removed useRouter, we don't need it anymore!
 
   return (
     <div className="space-y-6">
@@ -64,23 +65,20 @@ export function RequestTable({ requests }: { requests: RequestData[] }) {
               <TableHead>Store/Location</TableHead>
               <TableHead className="text-right">Amount Due</TableHead>
               <TableHead className="text-right">Ordered On</TableHead>
+              {/* 2. Added an Actions column header */}
+              <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {requests.map((req) => {
-              // Calculate total stock for this specific request
               const totalItems = req.items.reduce((acc, item) => acc + item.numOfOrderedStock, 0);
-              // Create a comma-separated list of product names
               const productNames = req.items.map(item => item.productName).join(", ");
 
               return (
                 <TableRow
                   key={req.id}
-                  onClick={() => {
-                    // Navigate using the parent Request ID
-                    router.push(`/bookkeeping/financial/${req.id}`)
-                  }}
-                  className="cursor-pointer hover:bg-muted/50 transition-colors"
+                  // 3. Removed the onClick router.push and cursor-pointer
+                  className="hover:bg-muted/50 transition-colors"
                 >
                   <TableCell className="font-medium">
                     {req.projectCode}
@@ -88,15 +86,15 @@ export function RequestTable({ requests }: { requests: RequestData[] }) {
                       {req.projectType} {req.purchaseOrderId ? `• PO: ${req.purchaseOrderId}` : ""}
                     </div>
                   </TableCell>
-                  
+
                   <TableCell className="max-w-[200px] truncate" title={productNames}>
                     {productNames || "No items"}
                   </TableCell>
-                  
+
                   <TableCell>{totalItems}</TableCell>
-                  
+
                   <TableCell>{getStatusBadge(req.deliveryStatus)}</TableCell>
-                  
+
                   <TableCell>
                     {req.storeName || "-"}
                     {req.requestor && (
@@ -105,11 +103,11 @@ export function RequestTable({ requests }: { requests: RequestData[] }) {
                       </div>
                     )}
                   </TableCell>
-                  
+
                   <TableCell className="text-right">
                     {formatCurrency(Number(req.amountDue))}
                   </TableCell>
-                  
+
                   <TableCell className="text-right">
                     {new Date(req.createdAt).toLocaleDateString("en-US", {
                       month: "short",
@@ -117,13 +115,19 @@ export function RequestTable({ requests }: { requests: RequestData[] }) {
                       year: "numeric"
                     })}
                   </TableCell>
+
+                  {/* 4. Added the Dialog Component here */}
+                  <TableCell className="text-right">
+                    <ViewRequestDialog projectCode={req.projectCode} />
+                  </TableCell>
                 </TableRow>
               )
             })}
 
             {requests.length === 0 && (
               <TableRow>
-                <TableCell colSpan={7} className="h-24 text-center text-muted-foreground">
+                {/* Updated colSpan from 7 to 8 to account for the new Actions column */}
+                <TableCell colSpan={8} className="h-24 text-center text-muted-foreground">
                   No requests found.
                 </TableCell>
               </TableRow>

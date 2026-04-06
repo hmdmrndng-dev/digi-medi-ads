@@ -50,3 +50,31 @@ export async function createRequest(formData: FormData) {
     // 5. Redirect back to the main page
     redirect("/bookkeeping/financial");
 }
+
+export async function getRequestDetails(projectCode: string) {
+    const requestData = await prisma.request.findUnique({
+        where: { projectCode },
+        include: {
+            items: true,
+            serviceInvoicePayment: true,
+        },
+    });
+
+    if (!requestData) {
+        throw new Error("Request not found");
+    }
+
+    // Convert Prisma Decimals to standard Numbers so Next.js can pass 
+    // them safely to the Client Component
+    return {
+        ...requestData,
+        // Convert the main amountDue
+        amountDue: requestData.amountDue ? requestData.amountDue.toNumber() : null,
+
+        // Map through payments and convert amountPaid
+        serviceInvoicePayment: requestData.serviceInvoicePayment.map((payment) => ({
+            ...payment,
+            amountPaid: payment.amountPaid ? payment.amountPaid.toNumber() : null,
+        }))
+    };
+}

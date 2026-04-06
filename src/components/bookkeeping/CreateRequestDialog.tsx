@@ -19,8 +19,7 @@ import { createRequest } from "@/actions/request/actions";
 export function CreateRequestDialog({ expectedProjectCode }: { expectedProjectCode: string }) {
     const [open, setOpen] = useState(false);
     const [isPending, startTransition] = useTransition();
-    
-    // 1. Add a ref to control the form element
+
     const formRef = useRef<HTMLFormElement>(null);
 
     const [items, setItems] = useState([
@@ -45,20 +44,17 @@ export function CreateRequestDialog({ expectedProjectCode }: { expectedProjectCo
         startTransition(async () => {
             try {
                 await createRequest(formData);
-                
-                // 2. Reset everything AFTER a successful request
+
                 setOpen(false);
                 setItems([{ productName: "", numOfOrderedStock: "" }]);
-                formRef.current?.reset(); // Clears projectType and amountDue
-                
+                formRef.current?.reset();
+
             } catch (error) {
-                // Next.js redirect throws an error. If we see "NEXT_REDIRECT", we ignore it
-                // so the redirect can happen, otherwise we log the real error.
                 if (error instanceof Error && error.message.includes('NEXT_REDIRECT')) {
                     setOpen(false);
                     setItems([{ productName: "", numOfOrderedStock: "" }]);
                     formRef.current?.reset();
-                    throw error; // Re-throw so Next.js handles the navigation
+                    throw error;
                 }
                 console.error("Failed to create request", error);
             }
@@ -79,7 +75,6 @@ export function CreateRequestDialog({ expectedProjectCode }: { expectedProjectCo
                     </DialogDescription>
                 </DialogHeader>
 
-                {/* 3. Attach the ref to the form */}
                 <form ref={formRef} action={handleSubmit} className="space-y-6 mt-4">
                     <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
@@ -124,10 +119,10 @@ export function CreateRequestDialog({ expectedProjectCode }: { expectedProjectCo
                     <div className="space-y-4 border-t pt-4">
                         <div className="flex items-center justify-between">
                             <Label className="text-base font-semibold">Products</Label>
-                            <Button 
-                                type="button" 
-                                variant="outline" 
-                                size="sm" 
+                            <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
                                 onClick={handleAddItem}
                                 disabled={isPending}
                             >
