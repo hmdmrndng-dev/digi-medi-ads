@@ -22,22 +22,22 @@ export function CreateRequestDialog({ expectedProjectCode }: { expectedProjectCo
 
     const formRef = useRef<HTMLFormElement>(null);
 
-    const [items, setItems] = useState([
-        { productName: "", numOfOrderedStock: "" }
+    const [products, setProducts] = useState([
+        { productName: "", numOfOrderedStock: "", amount: "" }
     ]);
 
-    const handleAddItem = () => {
-        setItems([...items, { productName: "", numOfOrderedStock: "" }]);
+    const handleAddProduct = () => {
+        setProducts([...products, { productName: "", numOfOrderedStock: "", amount: "" }]);
     };
 
-    const handleRemoveItem = (indexToRemove: number) => {
-        setItems(items.filter((_, index) => index !== indexToRemove));
+    const handleRemoveProduct = (indexToRemove: number) => {
+        setProducts(products.filter((_, index) => index !== indexToRemove));
     };
 
-    const handleItemChange = (index: number, field: "productName" | "numOfOrderedStock", value: string) => {
-        const newItems = [...items];
-        newItems[index][field] = value;
-        setItems(newItems);
+    const handleProductChange = (index: number, field: "productName" | "numOfOrderedStock" | "amount", value: string) => {
+        const newProducts = [...products];
+        newProducts[index][field] = value;
+        setProducts(newProducts);
     };
 
     const handleSubmit = (formData: FormData) => {
@@ -46,13 +46,13 @@ export function CreateRequestDialog({ expectedProjectCode }: { expectedProjectCo
                 await createRequest(formData);
 
                 setOpen(false);
-                setItems([{ productName: "", numOfOrderedStock: "" }]);
+                setProducts([{ productName: "", numOfOrderedStock: "", amount: "" }]);
                 formRef.current?.reset();
 
             } catch (error) {
                 if (error instanceof Error && error.message.includes('NEXT_REDIRECT')) {
                     setOpen(false);
-                    setItems([{ productName: "", numOfOrderedStock: "" }]);
+                    setProducts([{ productName: "", numOfOrderedStock: "", amount: "" }]);
                     formRef.current?.reset();
                     throw error;
                 }
@@ -67,7 +67,7 @@ export function CreateRequestDialog({ expectedProjectCode }: { expectedProjectCo
                 <Button>Create Request</Button>
             </DialogTrigger>
 
-            <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+            <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
                     <DialogTitle>Create Request</DialogTitle>
                     <DialogDescription>
@@ -90,40 +90,72 @@ export function CreateRequestDialog({ expectedProjectCode }: { expectedProjectCo
                         </div>
 
                         <div className="space-y-2">
-                            <Label htmlFor="projectType">Project Type</Label>
+                            <Label htmlFor="requestor">Requestor <span className="text-destructive">*</span></Label>
                             <Input
                                 type="text"
-                                id="projectType"
-                                name="projectType"
+                                id="requestor"
+                                name="requestor"
                                 required
                                 disabled={isPending}
-                                placeholder="e.g. Installation"
+                                placeholder="e.g. John Doe"
+                            />
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label htmlFor="storeCategory">Store Category <span className="text-destructive">*</span></Label>
+                            <Input
+                                type="text"
+                                id="storeCategory"
+                                name="storeCategory"
+                                required
+                                disabled={isPending}
+                                placeholder="e.g. Franchise"
+                            />
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label htmlFor="storeName">Store Name <span className="text-destructive">*</span></Label>
+                            <Input
+                                type="text"
+                                id="storeName"
+                                name="storeName"
+                                required
+                                disabled={isPending}
+                                placeholder="e.g. Main Branch"
+                            />
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label htmlFor="purchaseOrderId">Purchase Order ID</Label>
+                            <Input
+                                type="text"
+                                id="purchaseOrderId"
+                                name="purchaseOrderId"
+                                disabled={isPending}
+                                placeholder="e.g. PO-12345"
+                            />
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label htmlFor="orNumber">OR Number</Label>
+                            <Input
+                                type="text"
+                                id="orNumber"
+                                name="orNumber"
+                                disabled={isPending}
+                                placeholder="e.g. OR-98765"
                             />
                         </div>
                     </div>
 
-                    <div className="space-y-2">
-                        <Label htmlFor="amountDue">Total Amount Due</Label>
-                        <Input
-                            type="number"
-                            id="amountDue"
-                            name="amountDue"
-                            required
-                            min="0"
-                            step="0.01"
-                            disabled={isPending}
-                            placeholder="e.g. 199.99"
-                        />
-                    </div>
-
                     <div className="space-y-4 border-t pt-4">
                         <div className="flex items-center justify-between">
-                            <Label className="text-base font-semibold">Products</Label>
+                            <Label className="text-base font-semibold">Products <span className="text-destructive">*</span></Label>
                             <Button
                                 type="button"
                                 variant="outline"
                                 size="sm"
-                                onClick={handleAddItem}
+                                onClick={handleAddProduct}
                                 disabled={isPending}
                             >
                                 <Plus className="w-4 h-4 mr-2" />
@@ -131,29 +163,40 @@ export function CreateRequestDialog({ expectedProjectCode }: { expectedProjectCo
                             </Button>
                         </div>
 
-                        <input type="hidden" name="itemsData" value={JSON.stringify(items)} />
+                        <input type="hidden" name="productsData" value={JSON.stringify(products)} />
 
-                        {items.map((item, index) => (
+                        {products.map((product, index) => (
                             <div key={index} className="flex gap-2 items-start">
                                 <div className="flex-1 space-y-2">
                                     <Input
                                         type="text"
                                         placeholder="Product Name"
-                                        value={item.productName}
+                                        value={product.productName}
                                         required
                                         disabled={isPending}
-                                        onChange={(e) => handleItemChange(index, "productName", e.target.value)}
+                                        onChange={(e) => handleProductChange(index, "productName", e.target.value)}
+                                    />
+                                </div>
+                                <div className="w-[100px] space-y-2">
+                                    <Input
+                                        type="number"
+                                        placeholder="Qty"
+                                        value={product.numOfOrderedStock}
+                                        required
+                                        min="1"
+                                        disabled={isPending}
+                                        onChange={(e) => handleProductChange(index, "numOfOrderedStock", e.target.value)}
                                     />
                                 </div>
                                 <div className="w-[120px] space-y-2">
                                     <Input
                                         type="number"
-                                        placeholder="Qty"
-                                        value={item.numOfOrderedStock}
-                                        required
-                                        min="1"
+                                        placeholder="Amount"
+                                        value={product.amount}
+                                        step="0.01"
+                                        min="0"
                                         disabled={isPending}
-                                        onChange={(e) => handleItemChange(index, "numOfOrderedStock", e.target.value)}
+                                        onChange={(e) => handleProductChange(index, "amount", e.target.value)}
                                     />
                                 </div>
                                 <Button
@@ -161,8 +204,8 @@ export function CreateRequestDialog({ expectedProjectCode }: { expectedProjectCo
                                     variant="ghost"
                                     size="icon"
                                     className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                                    onClick={() => handleRemoveItem(index)}
-                                    disabled={items.length === 1 || isPending}
+                                    onClick={() => handleRemoveProduct(index)}
+                                    disabled={products.length === 1 || isPending}
                                 >
                                     <Trash2 className="w-4 h-4" />
                                 </Button>

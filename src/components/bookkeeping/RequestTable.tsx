@@ -1,6 +1,7 @@
-// src/components/bookkeeping/RequestPage.tsx
+// src/components/bookkeeping/RequestTable.tsx
 "use client"
 
+import { useState } from "react"
 import {
   Table,
   TableBody,
@@ -11,24 +12,38 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
-import { ViewRequestDialog } from "./ViewRequestDialog";
-
-// Adjust this import path to exactly where you saved the ViewRequestDialog
+import { RequestDialog } from "./RequestDialog"
+import { Label } from "@/components/ui/label"
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination"
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 
 type RequestData = {
   id: string;
   projectCode: string;
-  projectType: string;
   requestor: string | null;
   storeName: string | null;
+  storeCategory: string | null;
   deliveryStatus: string;
-  deliveryDate: Date | null;
   purchaseOrderId: string | null;
-  amountDue: any;
+  orNumber: string | null;
   createdAt: Date;
-  items: {
+  product: {
     productName: string;
     numOfOrderedStock: number;
+    amount: number | null;
   }[];
 }
 
@@ -49,85 +64,75 @@ const getStatusBadge = (status: string | null) => {
 }
 
 export function RequestTable({ requests }: { requests: RequestData[] }) {
-  // 1. Removed useRouter, we don't need it anymore!
+  // --- PAGINATION STATE ---
+  const [rowsPerPage, setRowsPerPage] = useState(25)
+  const [currentPage, setCurrentPage] = useState(1)
+
+  // --- PAGINATION LOGIC ---
+  const totalPages = Math.max(1, Math.ceil(requests.length / rowsPerPage))
+
+  // Ensure current page doesn't exceed total pages if data shrinks
+  const safeCurrentPage = Math.min(currentPage, totalPages)
+
+  const startIndex = (safeCurrentPage - 1) * rowsPerPage
+  const paginatedRequests = requests.slice(startIndex, startIndex + rowsPerPage)
+
+  const handleRowsChange = (value: string) => {
+    setRowsPerPage(Number(value))
+    setCurrentPage(1)
+  }
+
+  const handlePrevious = (e: React.MouseEvent) => {
+    e.preventDefault()
+    if (safeCurrentPage > 1) setCurrentPage(p => p - 1)
+  }
+
+  const handleNext = (e: React.MouseEvent) => {
+    e.preventDefault()
+    if (safeCurrentPage < totalPages) setCurrentPage(p => p + 1)
+  }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
+      {/* Table Section */}
       <div className="rounded-md border bg-card">
         <Table>
-          <TableCaption>A list of your recent requests.</TableCaption>
+          <TableCaption className="border-t py-2">Showing {startIndex + 1}-{Math.min(startIndex + rowsPerPage, requests.length)} of {requests.length} requests.</TableCaption>
           <TableHeader>
             <TableRow>
-              <TableHead>Project</TableHead>
-              <TableHead>Products</TableHead>
-              <TableHead>Total Qty</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Store/Location</TableHead>
+              <TableHead>Project Code</TableHead>
+              <TableHead>Requestor</TableHead>
+              <TableHead>Store Category</TableHead>
+              <TableHead>Store Name</TableHead>
+              <TableHead>Delivery Status</TableHead>
+              <TableHead>Purchase Order</TableHead>
               <TableHead className="text-right">Amount Due</TableHead>
-              <TableHead className="text-right">Ordered On</TableHead>
-              {/* 2. Added an Actions column header */}
-              <TableHead className="text-right">Actions</TableHead>
+              <TableHead>OR Number</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {requests.map((req) => {
-              const totalItems = req.items.reduce((acc, item) => acc + item.numOfOrderedStock, 0);
-              const productNames = req.items.map(item => item.productName).join(", ");
-
-              return (
+            {paginatedRequests.map((req) => (
+              <RequestDialog key={req.id} projectCode={req.projectCode} >
                 <TableRow
-                  key={req.id}
-                  // 3. Removed the onClick router.push and cursor-pointer
-                  className="hover:bg-muted/50 transition-colors"
+                  className="cursor-pointer hover:bg-muted/50 transition-colors"
                 >
-                  <TableCell className="font-medium">
-                    {req.projectCode}
-                    <div className="text-xs text-muted-foreground mt-0.5">
-                      {req.projectType} {req.purchaseOrderId ? `• PO: ${req.purchaseOrderId}` : ""}
-                    </div>
-                  </TableCell>
-
-                  <TableCell className="max-w-[200px] truncate" title={productNames}>
-                    {productNames || "No items"}
-                  </TableCell>
-
-                  <TableCell>{totalItems}</TableCell>
-
+                  <TableCell className="font-medium">{req.projectCode}</TableCell>
+                  <TableCell>{req.requestor || "-"}</TableCell>
+                  <TableCell>{req.storeCategory || "-"}</TableCell>
+                  <TableCell>{req.storeName || "-"}</TableCell>
                   <TableCell>{getStatusBadge(req.deliveryStatus)}</TableCell>
-
-                  <TableCell>
-                    {req.storeName || "-"}
-                    {req.requestor && (
-                      <div className="text-xs text-muted-foreground mt-0.5">
-                        Req by: {req.requestor}
-                      </div>
-                    )}
-                  </TableCell>
-
+                  <TableCell>{req.purchaseOrderId || "-"}</TableCell>
                   <TableCell className="text-right">
-                    {formatCurrency(Number(req.amountDue))}
+                    {formatCurrency(req.product.reduce((sum, item) => sum + (item.amount || 0), 0))}
                   </TableCell>
-
-                  <TableCell className="text-right">
-                    {new Date(req.createdAt).toLocaleDateString("en-US", {
-                      month: "short",
-                      day: "numeric",
-                      year: "numeric"
-                    })}
-                  </TableCell>
-
-                  {/* 4. Added the Dialog Component here */}
-                  <TableCell className="text-right">
-                    <ViewRequestDialog projectCode={req.projectCode} />
-                  </TableCell>
+                  <TableCell>{req.orNumber || "-"}</TableCell>
                 </TableRow>
-              )
-            })}
+              </RequestDialog>
+            ))}
 
             {requests.length === 0 && (
               <TableRow>
-                {/* Updated colSpan from 7 to 8 to account for the new Actions column */}
-                <TableCell colSpan={8} className="h-24 text-center text-muted-foreground">
+                <TableCell colSpan={9} className="h-24 text-center text-muted-foreground">
                   No requests found.
                 </TableCell>
               </TableRow>
@@ -135,6 +140,54 @@ export function RequestTable({ requests }: { requests: RequestData[] }) {
           </TableBody>
         </Table>
       </div>
+
+      {/* Pagination Controls Section */}
+      {requests.length > 0 && (
+        <div className="flex items-center justify-between gap-4 px-2">
+          {/* Rows Per Page Selector */}
+          <div className="flex items-center gap-3">
+            <Label htmlFor="select-rows-per-page" className="text-sm text-muted-foreground font-normal">
+              Rows per page
+            </Label>
+            <Select value={String(rowsPerPage)} onValueChange={handleRowsChange}>
+              <SelectTrigger className="w-20 h-8" id="select-rows-per-page">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent align="start">
+                <SelectGroup>
+                  <SelectItem value="10">10</SelectItem>
+                  <SelectItem value="25">25</SelectItem>
+                  <SelectItem value="50">50</SelectItem>
+                  <SelectItem value="100">100</SelectItem>
+                </SelectGroup>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Previous / Next Buttons */}
+          <Pagination className="mx-0 w-auto">
+            <PaginationContent>
+              <PaginationItem>
+                <PaginationPrevious
+                  onClick={handlePrevious}
+                  className={safeCurrentPage <= 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                />
+              </PaginationItem>
+              <PaginationItem>
+                <div className="px-4 text-sm text-muted-foreground font-medium">
+                  Page {safeCurrentPage} of {totalPages}
+                </div>
+              </PaginationItem>
+              <PaginationItem>
+                <PaginationNext
+                  onClick={handleNext}
+                  className={safeCurrentPage >= totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                />
+              </PaginationItem>
+            </PaginationContent>
+          </Pagination>
+        </div>
+      )}
     </div>
   )
 }

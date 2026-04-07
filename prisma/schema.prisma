@@ -27,25 +27,38 @@ model Expenses {
 model Request {
   id              String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   projectCode     String    @unique
-  projectType     String
   requestor       String?
   storeName       String?
+  storeCategory   String?
   deliveryStatus  String    @default("pending")
-  deliveryReceipt String?
-  deliveryDate    DateTime? @db.Timestamp(6)
   purchaseOrderId String?
-  amountDue       Decimal?  @db.Decimal(10, 2)
+  orNumber        String?
+  inTrash         Boolean   @default(false)
   createdAt       DateTime  @default(now()) @db.Timestamp(6)
   updatedAt       DateTime? @db.Timestamp(6)
 
-  items                 RequestItem[]
+  product               RequestProduct[]
   serviceInvoicePayment ServiceInvoicePayment[]
+  deliveryReceipts      DeliveryReceipt[]
 }
 
-model RequestItem {
-  id                String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+model RequestProduct {
+  id                String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   productName       String
   numOfOrderedStock Int
+  amount            Decimal?  @db.Decimal(10, 2)
+  status            Boolean   @default(true)
+  createdAt         DateTime  @default(now()) @db.Timestamp(6)
+  updatedAt         DateTime? @db.Timestamp(6)
+
+  request_id String  @db.Uuid
+  request    Request @relation(fields: [request_id], references: [id], onDelete: Cascade)
+}
+
+model DeliveryReceipt {
+  id              String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  deliveryReceipt String?
+  deliveryDate    DateTime? @db.Timestamp(6)
 
   request_id String  @db.Uuid
   request    Request @relation(fields: [request_id], references: [id], onDelete: Cascade)

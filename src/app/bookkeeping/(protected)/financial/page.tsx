@@ -1,6 +1,6 @@
 // src/app/bookkeeping/(protected)/financial/page.tsx
 import { CreateRequestDialog } from "@/components/bookkeeping/CreateRequestDialog";
-import { RequestTable } from "@/components/bookkeeping/RequestTable"; 
+import { RequestTable } from "@/components/bookkeeping/RequestTable";
 import { prisma } from "@/lib/prisma";
 
 export default async function Page() {
@@ -18,28 +18,33 @@ export default async function Page() {
     const expectedProjectCode = `${currentYear}-${String(nextNumber).padStart(4, '0')}`;
 
     const rawRequests = await prisma.request.findMany({
+        where: {
+            inTrash: false
+        },
         orderBy: {
             createdAt: 'desc'
         },
         include: {
-            items: true 
+            product: true
         }
     });
 
     const safeRequests = rawRequests.map((req) => ({
         id: req.id,
         projectCode: req.projectCode,
-        projectType: req.projectType,
         requestor: req.requestor || null,
         storeName: req.storeName || null,
+        storeCategory: req.storeCategory || null,
         deliveryStatus: req.deliveryStatus,
-        deliveryDate: req.deliveryDate || null,
         purchaseOrderId: req.purchaseOrderId || null,
-        amountDue: req.amountDue ? Number(req.amountDue) : null,
+        orNumber: req.orNumber || null,
         createdAt: req.createdAt,
-        items: req.items.map(item => ({
+
+        product: req.product.map(item => ({
             productName: item.productName,
             numOfOrderedStock: item.numOfOrderedStock,
+            amount: item.amount ? Number(item.amount) : null,
+            status: item.status
         }))
     }));
 
@@ -47,7 +52,7 @@ export default async function Page() {
         <div className="p-4 space-y-8">
             <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight">Stock Requests</h1>
+                    <h1 className="text-3xl font-bold tracking-tight">Project Requests</h1>
                     <p className="text-muted-foreground">
                         Manage and track all product orders and deliveries.
                     </p>
@@ -56,6 +61,7 @@ export default async function Page() {
                 <CreateRequestDialog expectedProjectCode={expectedProjectCode} />
             </div>
 
+            {/* Note: You may need to update this component to accept the new props too! */}
             <RequestTable requests={safeRequests} />
         </div>
     );
