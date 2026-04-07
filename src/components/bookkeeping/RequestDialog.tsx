@@ -14,6 +14,7 @@ import {
     DialogTitle,
     DialogTrigger,
 } from "@/components/ui/dialog";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Eye } from "lucide-react";
 import { getRequestDetails } from "@/actions/request/actions";
 
@@ -85,8 +86,71 @@ export function RequestDialog({ projectCode, children }: { projectCode: string; 
 
                 <div className="mt-4">
                     {isLoading ? (
-                        <div className="flex items-center justify-center p-12 text-muted-foreground">
-                            Fetching details...
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                            {/* Skeleton: General Information */}
+                            <div className="space-y-4">
+                                <div className="pb-2 border-b">
+                                    <Skeleton className="h-6 w-40" />
+                                </div>
+                                {[1, 2, 3, 4].map((i) => (
+                                    <div key={i} className="space-y-2">
+                                        <Skeleton className="h-4 w-24" />
+                                        <Skeleton className="h-10 w-full" />
+                                    </div>
+                                ))}
+                            </div>
+
+                            {/* Skeleton: Products, DRs, and Invoices */}
+                            <div className="space-y-6 lg:border-r lg:pr-8 lg:border-l lg:pl-8">
+                                <div className="space-y-4">
+                                    <div className="flex justify-between pb-2 border-b">
+                                        <Skeleton className="h-6 w-24" />
+                                        <Skeleton className="h-4 w-32" />
+                                    </div>
+                                    {[1, 2, 3].map((i) => (
+                                        <div key={i} className="flex gap-2">
+                                            <Skeleton className="h-9 flex-1" />
+                                            <Skeleton className="h-9 w-[60px]" />
+                                            <Skeleton className="h-9 w-[90px]" />
+                                        </div>
+                                    ))}
+                                </div>
+                                <div className="space-y-4">
+                                    <div className="flex justify-between pb-2 border-b">
+                                        <Skeleton className="h-6 w-32" />
+                                        <Skeleton className="h-4 w-12" />
+                                    </div>
+                                    <div className="flex gap-2">
+                                        <Skeleton className="h-9 flex-1" />
+                                        <Skeleton className="h-9 w-[120px]" />
+                                    </div>
+                                </div>
+                                <div className="space-y-4">
+                                    <div className="flex justify-between pb-2 border-b">
+                                        <Skeleton className="h-6 w-32" />
+                                        <Skeleton className="h-4 w-12" />
+                                    </div>
+                                    <div className="flex gap-2">
+                                        <Skeleton className="h-9 flex-1" />
+                                        <Skeleton className="h-9 w-[120px]" />
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Skeleton: Financials */}
+                            <div className="space-y-6">
+                                <div className="space-y-4">
+                                    <div className="pb-2 border-b">
+                                        <Skeleton className="h-6 w-24" />
+                                    </div>
+                                    {[1, 2, 3, 4].map((i) => (
+                                        <div key={i} className="space-y-2">
+                                            <Skeleton className="h-4 w-36" />
+                                            <Skeleton className="h-10 w-full" />
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
                         </div>
                     ) : !requestData ? (
                         <div className="flex items-center justify-center p-12 text-muted-foreground text-destructive">
