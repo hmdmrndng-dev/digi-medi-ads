@@ -89,7 +89,7 @@ export async function updateRequestDetails(projectCode: string, payload: any) {
             requestor,
             storeCategory,
             storeName,
-            items = [], // Frontend still sends it as 'items'
+            items = [],
             deliveryReceipts = [],
             serviceInvoicePayment = []
         } = payload;
@@ -119,7 +119,12 @@ export async function updateRequestDetails(projectCode: string, payload: any) {
                 // 🛑 CHANGED: 'items' to 'product' to match your Prisma schema
                 product: {
                     deleteMany: { id: { notIn: parsedItems.existingIds } },
-                    create: parsedItems.toCreate,
+                    create: parsedItems.toCreate.map(item => ({
+                        productName: item.productName,
+                        numOfOrderedStock: Number(item.numOfOrderedStock),
+                        amount: Number(item.amount),
+                        status: item.status
+                    })),
                     update: parsedItems.toUpdate.map(item => ({
                         where: { id: item.id },
                         data: {
@@ -133,7 +138,10 @@ export async function updateRequestDetails(projectCode: string, payload: any) {
 
                 deliveryReceipts: {
                     deleteMany: { id: { notIn: parsedDRs.existingIds } },
-                    create: parsedDRs.toCreate,
+                    create: parsedDRs.toCreate.map(dr => ({
+                        deliveryReceipt: dr.deliveryReceipt,
+                        deliveryDate: new Date(dr.deliveryDate)
+                    })),
                     update: parsedDRs.toUpdate.map(dr => ({
                         where: { id: dr.id },
                         data: {
