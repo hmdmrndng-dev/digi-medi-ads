@@ -142,15 +142,13 @@ export function RequestDialog({ projectCode, children }: { projectCode: string; 
         }}>
             <DialogTrigger asChild>
                 {children ? children : (
-                    <Button variant="ghost" size="sm">
-                        <Eye className="w-4 h-4 mr-2" /> View
-                    </Button>
+                    <Button variant="ghost" size="sm" />
                 )}
             </DialogTrigger>
 
             <DialogContent className="w-[95vw] sm:max-w-[1000px] lg:max-w-7xl max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
-                    <div className="flex justify-between items-start pr-6">
+                    <div className="flex flex-col gap-2 items-start">
                         <div>
                             <DialogTitle>Request Details</DialogTitle>
                             <DialogDescription>
@@ -175,21 +173,23 @@ export function RequestDialog({ projectCode, children }: { projectCode: string; 
                                 </Select>
                             ) : (
                                 <Badge
-                                    variant={formData.deliveryStatus?.toLowerCase() === 'pending' ? 'secondary' : 'default'}
+                                    variant={formData.deliveryStatus?.toLowerCase() === 'delivered' ? 'default' : 'secondary'}
                                     className={
                                         formData.deliveryStatus?.toLowerCase() === 'pending'
                                             ? 'bg-yellow-100 text-yellow-800 hover:bg-yellow-100'
-                                            : 'bg-green-100 text-green-800 hover:bg-green-100'
+                                            : formData.deliveryStatus?.toLowerCase() === 'cancelled'
+                                                ? 'bg-gray-100 text-gray-800 hover:bg-gray-100'
+                                                : 'bg-green-100 text-green-800 hover:bg-green-100'
                                     }
                                 >
-                                    {formData.deliveryStatus?.toUpperCase() || "UNKNOWN"}
+                                    {formData.deliveryStatus?.toUpperCase()}
                                 </Badge>
                             )
                         )}
                     </div>
                 </DialogHeader>
 
-                <div className="mt-4">
+                <div>
                     {isLoading ? (
                         <div className="flex items-center justify-center p-12"><Loader2 className="w-8 h-8 animate-spin text-muted-foreground" /></div>
                     ) : !formData ? (
