@@ -80,3 +80,91 @@ export async function getRequestDetails(projectCode: string) {
         }))
     };
 }
+
+import { revalidatePath } from "next/cache";
+export async function updateRequestDetails(projectCode: string, payload: any) {
+    try {
+        const {
+            deliveryStatus,
+            requestor,
+            storeCategory,
+            storeName,
+            items = [], // Frontend still sends it as 'items'
+            deliveryReceipts = [],
+            serviceInvoicePayment = []
+        } = payload;
+
+        const separateData = (arr: any[]) => {
+            const toCreate = arr.filter(item => typeof item.id === 'string' && item.id.startsWith('temp-'))
+                .map(({ id, ...rest }) => rest);
+
+            const toUpdate = arr.filter(item => typeof item.id !== 'string' || !item.id.startsWith('temp-'));
+            const existingIds = toUpdate.map(item => item.id);
+
+            return { toCreate, toUpdate, existingIds };
+        };
+
+        const parsedItems = separateData(items);
+        const parsedDRs = separateData(deliveryReceipts);
+        const parsedSIs = separateData(serviceInvoicePayment);
+
+        const updatedRequest = await prisma.request.update({
+            where: { projectCode },
+            data: {
+                deliveryStatus,
+                requestor,
+                storeCategory,
+                storeName,
+
+                // 🛑 CHANGED: 'items' to 'product' to match your Prisma schema
+                product: {
+                    deleteMany: { id: { notIn: parsedItems.existingIds } },
+                    create: parsedItems.toCreate,
+                    update: parsedItems.toUpdate.map(item => ({
+                        where: { id: item.id },
+                        data: {
+                            productName: item.productName,
+                            numOfOrderedStock: Number(item.numOfOrderedStock),
+                            amount: Number(item.amount),
+                            status: item.status
+                        }
+                    }))
+                },
+
+                deliveryReceipts: {
+                    deleteMany: { id: { notIn: parsedDRs.existingIds } },
+                    create: parsedDRs.toCreate,
+                    update: parsedDRs.toUpdate.map(dr => ({
+                        where: { id: dr.id },
+                        data: {
+                            deliveryReceipt: dr.deliveryReceipt,
+                            deliveryDate: new Date(dr.deliveryDate)
+                        }
+                    }))
+                },
+
+                serviceInvoicePayment: {
+                    deleteMany: { id: { notIn: parsedSIs.existingIds } },
+                    create: parsedSIs.toCreate.map(si => ({
+                        ...si,
+                        amountPaid: Number(si.amountPaid)
+                    })),
+                    update: parsedSIs.toUpdate.map(si => ({
+                        where: { id: si.id },
+                        data: {
+                            serviceInvoiceId: si.serviceInvoiceId,
+                            amountPaid: Number(si.amountPaid)
+                        }
+                    }))
+                }
+            }
+        });
+
+        revalidatePath("/bookkeeping/financial");
+        return { success: true, data: updatedRequest };
+
+    } catch (error) {
+        console.error("Failed to update request:", error);
+        return { success: false, error: "Failed to update request details." };
+    }
+}

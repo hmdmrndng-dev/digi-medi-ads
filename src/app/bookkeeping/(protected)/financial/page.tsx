@@ -61,7 +61,6 @@ export default async function Page() {
                 <CreateRequestDialog expectedProjectCode={expectedProjectCode} />
             </div>
 
-            {/* Note: You may need to update this component to accept the new props too! */}
             <RequestTable requests={safeRequests} />
         </div>
     );

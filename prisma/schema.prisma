@@ -22,6 +22,9 @@ model Expenses {
   taxClassification String?
   createdAt         DateTime  @default(now()) @db.Timestamp(6)
   updatedAt         DateTime? @db.Timestamp(6)
+
+  request_id String?  @db.Uuid
+  request    Request? @relation(fields: [request_id], references: [id], onDelete: Cascade)
 }
 
 model Request {
@@ -40,6 +43,7 @@ model Request {
   product               RequestProduct[]
   serviceInvoicePayment ServiceInvoicePayment[]
   deliveryReceipts      DeliveryReceipt[]
+  expenses              Expenses[]
 }
 
 model RequestProduct {
