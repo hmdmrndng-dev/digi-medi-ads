@@ -2,8 +2,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -21,7 +19,7 @@ import {
     SelectTrigger,
     SelectValue
 } from "@/components/ui/select";
-import { Eye, Trash2, Plus, Edit2, Save, Loader2 } from "lucide-react";
+import { Edit2, Save, Loader2 } from "lucide-react";
 import { getRequestDetails } from "@/actions/request/actions";
 import { updateRequestDetails } from "@/actions/request/actions";
 import { GeneralInformation } from "./RequestCard/GeneralInformation";
@@ -30,8 +28,24 @@ import { DeliveryReceipt } from "./RequestCard/DeliveryReceipt";
 import { ServiceInvoice } from "./RequestCard/ServiceInvoice";
 import { Financial } from "./RequestCard/Financial";
 
-export function RequestDialog({ projectCode, children }: { projectCode: string; children: React.ReactNode }) {
-    const [open, setOpen] = useState(false);
+// 1. ADDED open AND onOpenChange TO PROPS
+export function RequestDialog({
+    projectCode,
+    children,
+    open: externalOpen,
+    onOpenChange
+}: {
+    projectCode: string;
+    children?: React.ReactNode;
+    open?: boolean;
+    onOpenChange?: (open: boolean) => void;
+}) {
+    // 2. SETUP CONTROLLED VS UNCONTROLLED STATE
+    const [internalOpen, setInternalOpen] = useState(false);
+
+    const isControlled = externalOpen !== undefined;
+    const dialogOpen = isControlled ? externalOpen : internalOpen;
+    const setDialogOpen = isControlled && onOpenChange ? onOpenChange : setInternalOpen;
 
     const [requestData, setRequestData] = useState<any>(null);
     const [formData, setFormData] = useState<any>(null);
@@ -40,8 +54,9 @@ export function RequestDialog({ projectCode, children }: { projectCode: string; 
     const [isEditing, setIsEditing] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
 
+    // 3. UPDATED DEPENDENCY ARRAY TO USE dialogOpen
     useEffect(() => {
-        if (open && !requestData) {
+        if (dialogOpen && !requestData) {
             setIsLoading(true);
             getRequestDetails(projectCode)
                 .then((data) => {
@@ -51,7 +66,7 @@ export function RequestDialog({ projectCode, children }: { projectCode: string; 
                 .catch((error) => console.error("Failed to fetch request:", error))
                 .finally(() => setIsLoading(false));
         }
-    }, [open, projectCode, requestData]);
+    }, [dialogOpen, projectCode, requestData]);
 
     const formatCurrency = (amount: number | null | undefined) => {
         if (amount === null || amount === undefined) return "";
@@ -74,7 +89,10 @@ export function RequestDialog({ projectCode, children }: { projectCode: string; 
         return isNaN(date.getTime()) ? "" : date.toISOString().split('T')[0];
     };
 
-    const handleSave = async () => {
+    // UPDATED: Added React.FormEvent and e.preventDefault()
+    const handleSave = async (e?: React.FormEvent) => {
+        if (e) e.preventDefault();
+
         setIsSaving(true);
         try {
             const response = await updateRequestDetails(projectCode, formData);
@@ -132,19 +150,21 @@ export function RequestDialog({ projectCode, children }: { projectCode: string; 
     };
 
     return (
-        <Dialog open={open} onOpenChange={(val) => {
+        // 4. UPDATED DIALOG PROPS TO USE dialogOpen AND setDialogOpen
+        <Dialog open={dialogOpen} onOpenChange={(val) => {
             if (!val) {
-                setOpen(false);
+                setDialogOpen(false);
                 setIsEditing(false);
             } else {
-                setOpen(true);
+                setDialogOpen(true);
             }
         }}>
-            <DialogTrigger asChild>
-                {children ? children : (
-                    <Button variant="ghost" size="sm" />
-                )}
-            </DialogTrigger>
+            {/* Only render DialogTrigger if children are provided */}
+            {children && (
+                <DialogTrigger asChild>
+                    {children}
+                </DialogTrigger>
+            )}
 
             <DialogContent className="w-[95vw] sm:max-w-[1000px] lg:max-w-7xl max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
@@ -197,7 +217,8 @@ export function RequestDialog({ projectCode, children }: { projectCode: string; 
                             Failed to load data.
                         </div>
                     ) : (
-                        <>
+                        // UPDATED: Added <form> wrapper here
+                        <form onSubmit={handleSave}>
                             <div className="grid grid-cols-1 lg:grid-cols-[2fr_4fr_2fr] gap-8">
                                 <GeneralInformation formData={formData} setFormData={setFormData} isEditing={isEditing} />
 
@@ -205,11 +226,10 @@ export function RequestDialog({ projectCode, children }: { projectCode: string; 
 
                                     <Product formData={formData} isEditing={isEditing} isSaving={isSaving} handleAddRow={handleAddRow} handleArrayChange={handleArrayChange} formatCurrency={formatCurrency} handleDeleteRow={handleDeleteRow} />
 
-                                    <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 pt-4 border-t">
-                                        <DeliveryReceipt formData={formData} isEditing={isEditing} isSaving={isSaving} handleAddRow={handleAddRow} handleDeleteRow={handleDeleteRow} handleArrayChange={handleArrayChange} formatDate={formatDate} formatDateForInput={formatDateForInput} />
+                                    <DeliveryReceipt formData={formData} isEditing={isEditing} isSaving={isSaving} handleAddRow={handleAddRow} handleDeleteRow={handleDeleteRow} handleArrayChange={handleArrayChange} formatDate={formatDate} formatDateForInput={formatDateForInput} />
 
-                                        <ServiceInvoice formData={formData} isEditing={isEditing} isSaving={isSaving} handleAddRow={handleAddRow} handleDeleteRow={handleDeleteRow} handleArrayChange={handleArrayChange} formatCurrency={formatCurrency} />
-                                    </div>
+                                    <ServiceInvoice formData={formData} isEditing={isEditing} isSaving={isSaving} handleAddRow={handleAddRow} handleDeleteRow={handleDeleteRow} handleArrayChange={handleArrayChange} formatCurrency={formatCurrency} />
+
                                 </div>
 
                                 <div className="space-y-6">
@@ -221,26 +241,50 @@ export function RequestDialog({ projectCode, children }: { projectCode: string; 
                             <div className="flex justify-end gap-2 mt-8 pt-4 border-t">
                                 {isEditing ? (
                                     <>
-                                        <Button type="button" variant="outline" onClick={handleCancelEdit} disabled={isSaving}>
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            disabled={isSaving}
+                                            onClick={(e) => {
+                                                e.preventDefault(); // Stop form submission
+                                                handleCancelEdit();
+                                            }}
+                                        >
                                             Cancel
                                         </Button>
-                                        <Button type="button" onClick={handleSave} disabled={isSaving}>
+
+                                        {/* THIS IS THE ONLY SUBMIT BUTTON */}
+                                        <Button type="submit" disabled={isSaving}>
                                             {isSaving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
                                             Save Changes
                                         </Button>
                                     </>
                                 ) : (
                                     <>
-                                        <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            onClick={(e) => {
+                                                e.preventDefault(); // Stop form submission
+                                                setDialogOpen(false);
+                                            }}
+                                        >
                                             Close
                                         </Button>
-                                        <Button type="button" onClick={() => setIsEditing(true)}>
+
+                                        <Button
+                                            type="button"
+                                            onClick={(e) => {
+                                                e.preventDefault(); // Stop form submission
+                                                setIsEditing(true);
+                                            }}
+                                        >
                                             <Edit2 className="w-4 h-4 mr-2" /> Edit Details
                                         </Button>
                                     </>
                                 )}
                             </div>
-                        </>
+                        </form>
                     )}
                 </div>
             </DialogContent>

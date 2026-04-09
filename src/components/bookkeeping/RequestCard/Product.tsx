@@ -36,6 +36,7 @@ export function Product({ formData, isEditing, isSaving, handleAddRow, handleArr
                                     readOnly={!isEditing}
                                     onChange={(e) => handleArrayChange('items', index, 'productName', e.target.value)}
                                     className={`${!isEditing ? "readOnlyInput" : ""} ${isCancelled && !isEditing ? "line-through text-muted-foreground" : ""}`}
+                                    required
                                 />
                             </div>
                             <div className="w-[100px] space-y-2">
@@ -46,6 +47,8 @@ export function Product({ formData, isEditing, isSaving, handleAddRow, handleArr
                                     readOnly={!isEditing}
                                     onChange={(e) => handleArrayChange('items', index, 'numOfOrderedStock', e.target.value)}
                                     className={`${!isEditing ? "readOnlyInput" : ""} ${isCancelled && !isEditing ? "line-through text-muted-foreground" : ""}`}
+                                    required
+                                    min="1"
                                 />
                             </div>
                             <div className="w-[120px] space-y-2">
@@ -56,6 +59,9 @@ export function Product({ formData, isEditing, isSaving, handleAddRow, handleArr
                                     readOnly={!isEditing}
                                     onChange={(e) => handleArrayChange('items', index, 'amount', e.target.value)}
                                     className={`${!isEditing ? "readOnlyInput" : ""} ${isCancelled && !isEditing ? "line-through text-muted-foreground" : ""}`}
+                                    required
+                                    step="0.01"
+                                    min="0"
                                 />
                             </div>
                             {isEditing && (
@@ -65,6 +71,7 @@ export function Product({ formData, isEditing, isSaving, handleAddRow, handleArr
                                     size="icon"
                                     className="text-destructive hover:text-destructive hover:bg-destructive/10"
                                     onClick={() => handleDeleteRow('items', index)}
+                                    disabled={formData.items?.length <= 1 || isSaving}
                                 >
                                     <Trash2 className="w-4 h-4" />
                                 </Button>

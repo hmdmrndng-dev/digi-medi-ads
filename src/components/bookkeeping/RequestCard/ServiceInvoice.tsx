@@ -32,6 +32,7 @@ export function ServiceInvoice({ formData, isSaving, isEditing, handleAddRow, ha
                                 readOnly={!isEditing}
                                 onChange={(e) => handleArrayChange('serviceInvoicePayment', index, 'serviceInvoiceId', e.target.value)}
                                 className={`${!isEditing ? "readOnlyInput" : ""}`}
+                                required
                             />
                         </div>
                         <div className="w-[120px] space-y-2">
@@ -42,6 +43,7 @@ export function ServiceInvoice({ formData, isSaving, isEditing, handleAddRow, ha
                                 readOnly={!isEditing}
                                 onChange={(e) => handleArrayChange('serviceInvoicePayment', index, 'amountPaid', e.target.value)}
                                 className={`${!isEditing ? "readOnlyInput" : ""}`}
+                                required
                             />
                         </div>
                         {isEditing && (

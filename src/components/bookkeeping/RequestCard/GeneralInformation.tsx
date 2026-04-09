@@ -19,6 +19,7 @@ export function GeneralInformation({ formData, setFormData, isEditing }: any) {
                     readOnly={!isEditing}
                     onChange={(e) => setFormData({ ...formData, requestor: e.target.value })}
                     className={!isEditing ? "readOnlyInput" : ""}
+                    required
                 />
             </div>
             <div className="space-y-2">
@@ -29,6 +30,7 @@ export function GeneralInformation({ formData, setFormData, isEditing }: any) {
                     readOnly={!isEditing}
                     onChange={(e) => setFormData({ ...formData, storeCategory: e.target.value })}
                     className={!isEditing ? "readOnlyInput" : ""}
+                    required
                 />
             </div>
             <div className="space-y-2">
@@ -39,6 +41,7 @@ export function GeneralInformation({ formData, setFormData, isEditing }: any) {
                     readOnly={!isEditing}
                     onChange={(e) => setFormData({ ...formData, storeName: e.target.value })}
                     className={!isEditing ? "readOnlyInput" : ""}
+                    required
                 />
             </div>
         </div>

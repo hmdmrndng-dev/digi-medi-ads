@@ -176,3 +176,20 @@ export async function updateRequestDetails(projectCode: string, payload: any) {
         return { success: false, error: "Failed to update request details." };
     }
 }
+
+export async function moveToTrash(id: string) {
+    try {
+        await prisma.request.update({
+            where: { id },
+            data: { inTrash: true },
+        })
+
+        // This forces Next.js to re-fetch the data so the table updates automatically
+        revalidatePath("/requests") // Adjust this path to wherever your table is displayed
+
+        return { success: true }
+    } catch (error) {
+        console.error("Failed to move request to trash:", error)
+        return { success: false, error: "Failed to move to trash" }
+    }
+}

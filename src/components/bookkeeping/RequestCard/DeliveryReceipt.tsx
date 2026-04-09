@@ -32,6 +32,7 @@ export function DeliveryReceipt({ formData, isSaving, isEditing, handleAddRow, h
                                 readOnly={!isEditing}
                                 onChange={(e) => handleArrayChange('deliveryReceipts', index, 'deliveryReceipt', e.target.value)}
                                 className={`${!isEditing ? "readOnlyInput" : ""}`}
+                                required
                             />
                         </div>
                         <div className="w-[130px] space-y-2">
@@ -42,6 +43,7 @@ export function DeliveryReceipt({ formData, isSaving, isEditing, handleAddRow, h
                                 readOnly={!isEditing}
                                 onChange={(e) => handleArrayChange('deliveryReceipts', index, 'deliveryDate', e.target.value)}
                                 className={`${!isEditing ? "readOnlyInput" : ""}`}
+                                required
                             />
                         </div>
                         {isEditing && (
