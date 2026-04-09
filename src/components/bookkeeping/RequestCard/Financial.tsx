@@ -21,17 +21,6 @@ export function Financial({ formData, formatCurrency }: any) {
                 />
             </div>
             <div className="space-y-2">
-                <Label>Total Amount Collected</Label>
-                <Input
-                    type="text"
-                    value={formatCurrency(
-                        formData.serviceInvoicePayment?.reduce((sum: number, payment: any) => sum + (Number(payment.amountPaid) || 0), 0)
-                    )}
-                    readOnly
-                    className="readOnlyInput font-medium bg-muted/30"
-                />
-            </div>
-            <div className="space-y-2">
                 <Label>Total Net Collected</Label>
                 <Input
                     type="text"
@@ -52,6 +41,17 @@ export function Financial({ formData, formatCurrency }: any) {
                         (formData.serviceInvoicePayment?.reduce(
                             (sum: number, payment: any) => sum + (Number(payment.amountPaid) || 0), 0
                         ) || 0) / 1.12 * 0.12
+                    )}
+                    readOnly
+                    className="readOnlyInput font-medium bg-muted/30"
+                />
+            </div>
+            <div className="space-y-2">
+                <Label>Total Amount Collected</Label>
+                <Input
+                    type="text"
+                    value={formatCurrency(
+                        formData.serviceInvoicePayment?.reduce((sum: number, payment: any) => sum + (Number(payment.amountPaid) || 0), 0)
                     )}
                     readOnly
                     className="readOnlyInput font-medium bg-muted/30"

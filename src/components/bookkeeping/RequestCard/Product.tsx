@@ -8,8 +8,9 @@ export function Product({ formData, isEditing, isSaving, handleAddRow, handleArr
         <div className="space-y-4 border-t pt-4 lg:border-t-0 lg:pt-0">
             <div className="flex gap-2 items-center">
                 <Label className="flex-1 text-base font-semibold">Products</Label>
-                <div className="w-[100px] text-xs text-muted-foreground font-medium">Qty</div>
+                <div className="w-[60px] text-xs text-muted-foreground font-medium">Qty</div>
                 <div className="w-[120px] text-xs text-muted-foreground font-medium">Amount</div>
+                <div className="w-[80px] text-xs text-muted-foreground font-medium">Purchase Order No.</div>
                 {isEditing && (
                     <Button
                         type="button"
@@ -39,7 +40,7 @@ export function Product({ formData, isEditing, isSaving, handleAddRow, handleArr
                                     required
                                 />
                             </div>
-                            <div className="w-[100px] space-y-2">
+                            <div className="w-[60px] space-y-2">
                                 <Input
                                     type="number"
                                     placeholder="Qty"
@@ -62,6 +63,17 @@ export function Product({ formData, isEditing, isSaving, handleAddRow, handleArr
                                     required
                                     step="0.01"
                                     min="0"
+                                />
+                            </div>
+                            <div className="w-[80px] space-y-2">
+                                <Input
+                                    type="text"
+                                    placeholder="Purchase Order No."
+                                    value={product.purchaseOrderNo}
+                                    readOnly={!isEditing}
+                                    onChange={(e) => handleArrayChange('items', index, 'purchaseOrderNo', e.target.value)}
+                                    className={`${!isEditing ? "readOnlyInput" : ""} ${isCancelled && !isEditing ? "line-through text-muted-foreground" : ""}`}
+                                    required
                                 />
                             </div>
                             {isEditing && (

@@ -28,7 +28,7 @@ export const navData = {
         { title: "Financial", url: "/bookkeeping/financial" },
         { title: "Expense", url: "/bookkeeping/expense" },
         { title: "Payables", url: "/bookkeeping/payables" },
-        { title: "Collection", url: "/bookkeeping/collection" },
+        { title: "Accountable", url: "/bookkeeping/accountable" },
         { title: "Trash", url: "/bookkeeping/trash" },
       ],
     },

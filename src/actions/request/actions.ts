@@ -6,13 +6,16 @@ import { redirect } from "next/navigation";
 
 export async function createRequest(formData: FormData) {
     const requestor = formData.get("requestor") as string;
+    const tinNo = formData.get("tinNo") as string;
     const storeCategory = formData.get("storeCategory") as string;
     const storeName = formData.get("storeName") as string;
+    const purchaseOrderNo = formData.get("purchaseOrderNo") as string;
 
     const productsDataString = formData.get("productsData") as string;
     const parsedProducts = JSON.parse(productsDataString);
 
     const formattedProducts = parsedProducts.map((product: { productName: string; numOfOrderedStock: string; amount: string }) => ({
+        purchaseOrderNo: purchaseOrderNo,
         productName: product.productName,
         numOfOrderedStock: parseInt(product.numOfOrderedStock, 10),
         amount: parseFloat(product.amount),
@@ -36,10 +39,11 @@ export async function createRequest(formData: FormData) {
         data: {
             projectCode: projectCode,
             requestor: requestor,
+            tinNo: tinNo,
             storeCategory: storeCategory,
             storeName: storeName,
 
-            product: {
+            products: {
                 create: formattedProducts,
             },
         },
@@ -52,9 +56,9 @@ export async function getRequestDetails(projectCode: string) {
     const requestData = await prisma.request.findUnique({
         where: { projectCode },
         include: {
-            product: true,
-            serviceInvoicePayment: true,
-            deliveryReceipts: true,
+            products: true,
+            invoices: true,
+            deliveries: true,
         },
     });
 
@@ -62,21 +66,21 @@ export async function getRequestDetails(projectCode: string) {
         throw new Error("Request not found");
     }
 
-    const { product, serviceInvoicePayment, deliveryReceipts, ...safeRequestData } = requestData;
+    const { products, invoices, deliveries, ...safeRequestData } = requestData;
 
     return {
         ...safeRequestData,
 
-        items: (product || []).map((p) => ({
+        items: (products || []).map((p) => ({
             ...p,
             amount: p.amount ? p.amount.toNumber() : null
         })),
 
-        deliveryReceipts: deliveryReceipts || [],
+        deliveries: deliveries || [],
 
-        serviceInvoicePayment: (serviceInvoicePayment || []).map((payment) => ({
-            ...payment,
-            amountPaid: payment.amountPaid ? payment.amountPaid.toNumber() : null,
+        invoices: (invoices || []).map((bill) => ({
+            ...bill,
+            amountDue: bill.amountDue ? bill.amountDue.toNumber() : null,
         }))
     };
 }
@@ -87,11 +91,12 @@ export async function updateRequestDetails(projectCode: string, payload: any) {
         const {
             deliveryStatus,
             requestor,
+            tinNo,
             storeCategory,
             storeName,
             items = [],
-            deliveryReceipts = [],
-            serviceInvoicePayment = []
+            deliveries = [],
+            invoices = []
         } = payload;
 
         const separateData = (arr: any[]) => {
@@ -105,19 +110,19 @@ export async function updateRequestDetails(projectCode: string, payload: any) {
         };
 
         const parsedItems = separateData(items);
-        const parsedDRs = separateData(deliveryReceipts);
-        const parsedSIs = separateData(serviceInvoicePayment);
+        const parsedDRs = separateData(deliveries);
+        const parsedSIs = separateData(invoices);
 
         const updatedRequest = await prisma.request.update({
             where: { projectCode },
             data: {
                 deliveryStatus,
                 requestor,
+                tinNo,
                 storeCategory,
                 storeName,
 
-                // 🛑 CHANGED: 'items' to 'product' to match your Prisma schema
-                product: {
+                products: {
                     deleteMany: { id: { notIn: parsedItems.existingIds } },
                     create: parsedItems.toCreate.map(item => ({
                         productName: item.productName,
@@ -136,32 +141,32 @@ export async function updateRequestDetails(projectCode: string, payload: any) {
                     }))
                 },
 
-                deliveryReceipts: {
+                deliveries: {
                     deleteMany: { id: { notIn: parsedDRs.existingIds } },
                     create: parsedDRs.toCreate.map(dr => ({
-                        deliveryReceipt: dr.deliveryReceipt,
-                        deliveryDate: new Date(dr.deliveryDate)
+                        receiptNo: dr.receiptNo,
+                        dateDelivered: new Date(dr.dateDelivered)
                     })),
                     update: parsedDRs.toUpdate.map(dr => ({
                         where: { id: dr.id },
                         data: {
-                            deliveryReceipt: dr.deliveryReceipt,
-                            deliveryDate: new Date(dr.deliveryDate)
+                            receiptNo: dr.receiptNo,
+                            dateDelivered: new Date(dr.dateDelivered)
                         }
                     }))
                 },
 
-                serviceInvoicePayment: {
+                invoices: {
                     deleteMany: { id: { notIn: parsedSIs.existingIds } },
                     create: parsedSIs.toCreate.map(si => ({
                         ...si,
-                        amountPaid: Number(si.amountPaid)
+                        amountDue: Number(si.amountDue)
                     })),
                     update: parsedSIs.toUpdate.map(si => ({
                         where: { id: si.id },
                         data: {
-                            serviceInvoiceId: si.serviceInvoiceId,
-                            amountPaid: Number(si.amountPaid)
+                            invoiceNo: si.invoiceNo,
+                            amountDue: Number(si.amountDue)
                         }
                     }))
                 }

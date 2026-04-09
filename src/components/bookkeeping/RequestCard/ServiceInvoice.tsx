@@ -7,30 +7,30 @@ export function ServiceInvoice({ formData, isSaving, isEditing, handleAddRow, ha
     return (
         <div className="space-y-4">
             <div className="flex items-center justify-between">
-                <Label className="text-base font-semibold">Service Invoices</Label>
-                <div className="w-[120px] text-xs text-muted-foreground font-medium">Paid</div>
+                <Label className="flex-1 text-base font-semibold">Service Invoices</Label>
+                <div className="w-[120px] text-xs text-muted-foreground font-medium">Amount Due</div>
                 {isEditing && (
                     <Button
                         type="button"
                         variant="outline"
                         size="sm"
-                        onClick={() => handleAddRow('serviceInvoicePayment')}
+                        onClick={() => handleAddRow('invoices')}
                         disabled={isSaving}
                     >
                         <Plus className="w-4 h-4" />
                     </Button>
                 )}
             </div>
-            {formData.serviceInvoicePayment?.length > 0 ? (
-                formData.serviceInvoicePayment.map((sip: any, index: number) => (
+            {formData.invoices?.length > 0 ? (
+                formData.invoices.map((sip: any, index: number) => (
                     <div key={sip.id || index} className="flex gap-2 items-start">
                         <div className="flex-1 space-y-2">
                             <Input
                                 type="text"
                                 placeholder="SI Number"
-                                value={sip.serviceInvoiceId || ""}
+                                value={sip.invoiceNo || ""}
                                 readOnly={!isEditing}
-                                onChange={(e) => handleArrayChange('serviceInvoicePayment', index, 'serviceInvoiceId', e.target.value)}
+                                onChange={(e) => handleArrayChange('invoices', index, 'invoiceNo', e.target.value)}
                                 className={`${!isEditing ? "readOnlyInput" : ""}`}
                                 required
                             />
@@ -38,10 +38,10 @@ export function ServiceInvoice({ formData, isSaving, isEditing, handleAddRow, ha
                         <div className="w-[120px] space-y-2">
                             <Input
                                 type={isEditing ? "number" : "text"}
-                                placeholder="Amount Paid"
-                                value={isEditing ? sip.amountPaid : formatCurrency(sip.amountPaid)}
+                                placeholder="Amount Due"
+                                value={isEditing ? (sip.amountDue ?? "") : formatCurrency(sip.amountDue)}
                                 readOnly={!isEditing}
-                                onChange={(e) => handleArrayChange('serviceInvoicePayment', index, 'amountPaid', e.target.value)}
+                                onChange={(e) => handleArrayChange('invoices', index, 'amountDue', e.target.value)}
                                 className={`${!isEditing ? "readOnlyInput" : ""}`}
                                 required
                             />
@@ -52,7 +52,7 @@ export function ServiceInvoice({ formData, isSaving, isEditing, handleAddRow, ha
                                 variant="ghost"
                                 size="icon"
                                 className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                                onClick={() => handleDeleteRow('serviceInvoicePayment', index)}
+                                onClick={() => handleDeleteRow('invoices', index)}
                             >
                                 <Trash2 className="w-4 h-4" />
                             </Button>

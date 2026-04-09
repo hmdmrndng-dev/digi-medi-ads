@@ -14,23 +14,23 @@ export function DeliveryReceipt({ formData, isSaving, isEditing, handleAddRow, h
                         type="button"
                         variant="outline"
                         size="sm"
-                        onClick={() => handleAddRow('deliveryReceipts')}
+                        onClick={() => handleAddRow('deliveries')}
                         disabled={isSaving}
                     >
                         <Plus className="w-4 h-4" />
                     </Button>
                 )}
             </div>
-            {formData.deliveryReceipts?.length > 0 ? (
-                formData.deliveryReceipts.map((dr: any, index: number) => (
+            {formData.deliveries?.length > 0 ? (
+                formData.deliveries.map((dr: any, index: number) => (
                     <div key={dr.id || index} className="flex gap-2 items-start">
                         <div className="flex-1 space-y-2">
                             <Input
                                 type="text"
                                 placeholder="DR Number"
-                                value={dr.deliveryReceipt || ""}
+                                value={dr.receiptNo || ""}
                                 readOnly={!isEditing}
-                                onChange={(e) => handleArrayChange('deliveryReceipts', index, 'deliveryReceipt', e.target.value)}
+                                onChange={(e) => handleArrayChange('deliveries', index, 'receiptNo', e.target.value)}
                                 className={`${!isEditing ? "readOnlyInput" : ""}`}
                                 required
                             />
@@ -39,9 +39,9 @@ export function DeliveryReceipt({ formData, isSaving, isEditing, handleAddRow, h
                             <Input
                                 type={isEditing ? "date" : "text"}
                                 placeholder="Date"
-                                value={isEditing ? formatDateForInput(dr.deliveryDate) : formatDate(dr.deliveryDate)}
+                                value={isEditing ? formatDateForInput(dr.dateDelivered) : formatDate(dr.dateDelivered)}
                                 readOnly={!isEditing}
-                                onChange={(e) => handleArrayChange('deliveryReceipts', index, 'deliveryDate', e.target.value)}
+                                onChange={(e) => handleArrayChange('deliveries', index, 'dateDelivered', e.target.value)}
                                 className={`${!isEditing ? "readOnlyInput" : ""}`}
                                 required
                             />
@@ -52,7 +52,7 @@ export function DeliveryReceipt({ formData, isSaving, isEditing, handleAddRow, h
                                 variant="ghost"
                                 size="icon"
                                 className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                                onClick={() => handleDeleteRow('deliveryReceipts', index)}
+                                onClick={() => handleDeleteRow('deliveries', index)}
                             >
                                 <Trash2 className="w-4 h-4" />
                             </Button>

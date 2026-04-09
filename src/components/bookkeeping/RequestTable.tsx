@@ -39,8 +39,6 @@ import {
 import { moveToTrash } from "@/actions/request/actions"
 import { ConfirmDialog } from "../confirm-dialog"
 
-// IMPORT YOUR NEW COMPONENTS & ACTIONS HERE:
-
 type RequestData = {
   id: string;
   projectCode: string;
@@ -48,10 +46,9 @@ type RequestData = {
   storeName: string | null;
   storeCategory: string | null;
   deliveryStatus: string;
-  purchaseOrderId: string | null;
   orNumber: string | null;
   createdAt: Date;
-  product: {
+  products: {
     productName: string;
     numOfOrderedStock: number;
     amount: number | null;
@@ -146,7 +143,7 @@ export function RequestTable({ requests }: { requests: RequestData[] }) {
     startTransition(async () => {
       const result = await moveToTrash(activeRequest.id)
       if (result.success) {
-        setIsDeleteDialogOpen(false) // Close modal when finished
+        setIsDeleteDialogOpen(false)
       } else {
         alert("Failed to move to trash. Please try again.")
       }
@@ -159,6 +156,7 @@ export function RequestTable({ requests }: { requests: RequestData[] }) {
       {/* VIEW DETAILS DIALOG */}
       {selectedProjectCode && (
         <RequestDialog
+          key={selectedProjectCode}
           projectCode={selectedProjectCode}
           open={isDialogOpen}
           onOpenChange={setIsDialogOpen}
@@ -205,7 +203,7 @@ export function RequestTable({ requests }: { requests: RequestData[] }) {
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem
-            onClick={handleTrashClick} // <--- Updated to use the new handler
+            onClick={handleTrashClick}
             className="cursor-pointer text-red-600 focus:text-red-600 focus:bg-red-100"
           >
             <Trash2 className="mr-2 h-4 w-4" />
@@ -227,7 +225,6 @@ export function RequestTable({ requests }: { requests: RequestData[] }) {
               <TableHead>Store Category</TableHead>
               <TableHead>Store Name</TableHead>
               <TableHead>Delivery Status</TableHead>
-              <TableHead>Purchase Order</TableHead>
               <TableHead className="text-right">Amount Due</TableHead>
               <TableHead>OR Number</TableHead>
             </TableRow>
@@ -244,9 +241,8 @@ export function RequestTable({ requests }: { requests: RequestData[] }) {
                 <TableCell>{req.storeCategory || "-"}</TableCell>
                 <TableCell>{req.storeName || "-"}</TableCell>
                 <TableCell>{getStatusBadge(req.deliveryStatus)}</TableCell>
-                <TableCell>{req.purchaseOrderId || "-"}</TableCell>
                 <TableCell className="text-right">
-                  {formatCurrency(req.product.reduce((sum, item) => sum + (item.amount || 0), 0))}
+                  {formatCurrency(req.products.reduce((sum, item) => sum + (item.amount || 0), 0))}
                 </TableCell>
                 <TableCell>{req.orNumber || "-"}</TableCell>
               </TableRow>

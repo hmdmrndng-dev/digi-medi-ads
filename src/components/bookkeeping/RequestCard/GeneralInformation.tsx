@@ -23,6 +23,17 @@ export function GeneralInformation({ formData, setFormData, isEditing }: any) {
                 />
             </div>
             <div className="space-y-2">
+                <Label>Tin No.</Label>
+                <Input
+                    type="text"
+                    value={formData.tinNo || ""}
+                    readOnly={!isEditing}
+                    onChange={(e) => setFormData({ ...formData, tinNo: e.target.value })}
+                    className={!isEditing ? "readOnlyInput" : ""}
+                    required
+                />
+            </div>
+            <div className="space-y-2">
                 <Label>Store Category</Label>
                 <Input
                     type="text"

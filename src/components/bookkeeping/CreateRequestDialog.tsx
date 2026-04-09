@@ -102,6 +102,18 @@ export function CreateRequestDialog({ expectedProjectCode }: { expectedProjectCo
                         </div>
 
                         <div className="space-y-2">
+                            <Label htmlFor="tinNo">TIN No. </Label>
+                            <Input
+                                type="text"
+                                id="tinNo"
+                                name="tinNo"
+                                required
+                                disabled={isPending}
+                                placeholder="e.g. 123-456-789-000 "
+                            />
+                        </div>
+
+                        <div className="space-y-2">
                             <Label htmlFor="storeCategory">Store Category <span className="text-destructive">*</span></Label>
                             <Input
                                 type="text"
@@ -126,24 +138,13 @@ export function CreateRequestDialog({ expectedProjectCode }: { expectedProjectCo
                         </div>
 
                         <div className="space-y-2">
-                            <Label htmlFor="purchaseOrderId">Purchase Order ID</Label>
+                            <Label htmlFor="purchaseOrderNo">Purchase Order ID</Label>
                             <Input
                                 type="text"
-                                id="purchaseOrderId"
-                                name="purchaseOrderId"
+                                id="purchaseOrderNo"
+                                name="purchaseOrderNo"
                                 disabled={isPending}
                                 placeholder="e.g. PO-12345"
-                            />
-                        </div>
-
-                        <div className="space-y-2">
-                            <Label htmlFor="orNumber">OR Number</Label>
-                            <Input
-                                type="text"
-                                id="orNumber"
-                                name="orNumber"
-                                disabled={isPending}
-                                placeholder="e.g. OR-98765"
                             />
                         </div>
                     </div>

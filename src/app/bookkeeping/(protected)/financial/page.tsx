@@ -25,7 +25,7 @@ export default async function Page() {
             createdAt: 'desc'
         },
         include: {
-            product: true
+            products: true,
         }
     });
 
@@ -33,14 +33,15 @@ export default async function Page() {
         id: req.id,
         projectCode: req.projectCode,
         requestor: req.requestor || null,
+        tinNo: req.tinNo || null,
         storeName: req.storeName || null,
         storeCategory: req.storeCategory || null,
         deliveryStatus: req.deliveryStatus,
-        purchaseOrderId: req.purchaseOrderId || null,
         orNumber: req.orNumber || null,
         createdAt: req.createdAt,
 
-        product: req.product.map(item => ({
+        products: req.products.map(item => ({
+            purchaseOrderNo: item.purchaseOrderNo,
             productName: item.productName,
             numOfOrderedStock: item.numOfOrderedStock,
             amount: item.amount ? Number(item.amount) : null,
