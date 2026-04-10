@@ -89,10 +89,6 @@ export function RequestTable({ requests }: { requests: RequestData[] }) {
     getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
-
-    // 🔥 ADD THIS ONE LINE:
-    getRowId: (row) => row.id,
-
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     onColumnVisibilityChange: setColumnVisibility,
@@ -146,24 +142,20 @@ export function RequestTable({ requests }: { requests: RequestData[] }) {
   }
 
   const handleConfirmBulkTrash = () => {
-    // 1. Get all currently selected rows
     const selectedRows = table.getFilteredSelectedRowModel().rows
     if (selectedRows.length === 0) return
 
     startTransition(async () => {
-      // 2. Extract the actual IDs from the row data
       const selectedIds = selectedRows.map(row => row.original.id)
 
-      // 3. Fire the moveToTrash action for every selected ID simultaneously
       const promises = selectedIds.map(id => moveToTrash(id))
       const results = await Promise.all(promises)
 
-      // 4. Check if they all succeeded
       const allSuccess = results.every(res => res.success)
 
       if (allSuccess) {
         setIsBulkDeleteDialogOpen(false)
-        setRowSelection({}) // 🔥 Crucial: Clear the checkboxes after trashing!
+        setRowSelection({})
       } else {
         alert("Some items failed to move to trash. Please try again.")
       }
@@ -176,7 +168,7 @@ export function RequestTable({ requests }: { requests: RequestData[] }) {
   }
 
   return (
-    <div className="space-y-4">
+    <div>
 
       {/* VIEW DETAILS DIALOG */}
       {selectedProjectCode && (
@@ -255,7 +247,8 @@ export function RequestTable({ requests }: { requests: RequestData[] }) {
       </DropdownMenu>
 
       {/* TOOLBARS WRAPPER */}
-      <div className="space-y-3">
+      {/* 🔥 Added sticky, top-16 (to sit right under your h-16 header), z-40, and a solid background */}
+      <div className="space-y-2 sticky top-16 z-40 bg-background border-b">
 
         {/* TOP ROW: SEARCH & COLUMNS */}
         <div className="flex items-center justify-between">
@@ -296,67 +289,108 @@ export function RequestTable({ requests }: { requests: RequestData[] }) {
           </DropdownMenu>
         </div>
 
-        {/* BOTTOM ROW: MASTER CHECKBOX, REFRESH, & BULK ACTIONS */}
-        <div className="flex items-center gap-1"> {/* Reduced gap slightly for a tighter grouping */}
+        {/* BOTTOM ROW: MASTER CHECKBOX, REFRESH, BULK ACTIONS, & PAGINATION */}
+        <div className="flex items-center justify-between w-full">
 
-          {/* Master Checkbox Container (Borderless, highlight on hover) */}
-          <div className="flex items-center justify-center rounded-md h-9 w-9 hover:bg-accent transition-colors z-10">
-            <Checkbox
-              id="select-all"
-              checked={
-                table.getIsAllPageRowsSelected() ||
-                (table.getIsSomePageRowsSelected() && "indeterminate")
-              }
-              onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-              aria-label="Select all"
-              className="text-muted-foreground"
-            />
+          {/* LEFT SIDE: Checkbox & Contextual Actions */}
+          <div className="flex items-center gap-1">
+
+            {/* Master Checkbox Container */}
+            <div className="flex items-center justify-center rounded-md h-9 w-9 hover:bg-accent transition-colors z-10">
+              <Checkbox
+                id="select-all"
+                checked={
+                  table.getIsAllPageRowsSelected() ||
+                  (table.getIsSomePageRowsSelected() && "indeterminate")
+                }
+                onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+                aria-label="Select all"
+                className="text-muted-foreground"
+              />
+            </div>
+
+            {/* CONTEXTUAL ACTION BAR: Swaps based on selection */}
+            {table.getFilteredSelectedRowModel().rows.length > 0 ? (
+              // STATE 1: ITEMS SELECTED (Show Bulk Actions)
+              <div className="flex items-center animate-in fade-in slide-in-from-left-2 duration-200 ml-1">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setIsBulkDeleteDialogOpen(true)}
+                  className="h-9 text-muted-foreground hover:text-red-600 hover:bg-red-50"
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Trash
+                </Button>
+
+                <span className="text-sm font-medium text-muted-foreground ml-2">
+                  {table.getFilteredSelectedRowModel().rows.length} selected
+                </span>
+              </div>
+            ) : (
+              // STATE 2: NOTHING SELECTED (Show Refresh)
+              <div className="flex items-center animate-in fade-in zoom-in-95 duration-200 ml-1">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={handleRefresh}
+                  disabled={isPending}
+                  className="h-9 w-9 text-muted-foreground"
+                  title="Refresh"
+                >
+                  <RefreshCw className={`h-4 w-4 ${isPending ? 'animate-spin' : ''}`} />
+                </Button>
+              </div>
+            )}
           </div>
 
-          {/* CONTEXTUAL ACTION BAR: Swaps based on selection */}
-          {table.getFilteredSelectedRowModel().rows.length > 0 ? (
+          {/* RIGHT SIDE: PAGINATION AND ROW SELECTION INFO */}
+          {table.getFilteredRowModel().rows.length > 0 && (
+            <div className="flex items-center gap-4 px-2">
+              {/* SELECTION INFO */}
+              <div className="text-sm text-muted-foreground hidden sm:block">
+                {table.getFilteredSelectedRowModel().rows.length} of{" "}
+                {table.getFilteredRowModel().rows.length} row(s) selected.
+              </div>
 
-            // STATE 1: ITEMS SELECTED (Show Bulk Actions)
-            <div className="flex items-center animate-in fade-in slide-in-from-left-2 duration-200 ml-1">
-              {/* Changed to ghost variant, removed border on hover */}
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setIsBulkDeleteDialogOpen(true)}
-                className="h-9 text-muted-foreground hover:text-red-600 hover:bg-red-50"
-              >
-                <Trash2 className="h-4 w-4 mr-2" />
-                Trash
-              </Button>
+              {/* PAGINATION CONTROLS */}
+              <Pagination className="mx-0 w-auto">
+                <PaginationContent>
+                  <PaginationItem>
+                    <PaginationPrevious
+                      onClick={(e) => {
+                        e.preventDefault();
+                        table.previousPage();
+                      }}
+                      className={!table.getCanPreviousPage() ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                    />
+                  </PaginationItem>
 
-              <span className="text-sm font-medium text-muted-foreground ml-2">
-                {table.getFilteredSelectedRowModel().rows.length} selected
-              </span>
+                  <PaginationItem>
+                    <div className="px-4 text-sm text-muted-foreground font-medium whitespace-nowrap">
+                      Page {table.getState().pagination.pageIndex + 1} of {table.getPageCount()}
+                    </div>
+                  </PaginationItem>
+
+                  <PaginationItem>
+                    <PaginationNext
+                      onClick={(e) => {
+                        e.preventDefault();
+                        table.nextPage();
+                      }}
+                      className={!table.getCanNextPage() ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                    />
+                  </PaginationItem>
+                </PaginationContent>
+              </Pagination>
             </div>
-
-          ) : (
-
-            // STATE 2: NOTHING SELECTED (Show Refresh)
-            <div className="flex items-center animate-in fade-in zoom-in-95 duration-200 ml-1">
-              {/* Changed to ghost variant */}
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={handleRefresh}
-                disabled={isPending}
-                className="h-9 w-9 text-muted-foreground"
-                title="Refresh"
-              >
-                <RefreshCw className={`h-4 w-4 ${isPending ? 'animate-spin' : ''}`} />
-              </Button>
-            </div>
-
           )}
+
         </div>
       </div>
 
       {/* DATA TABLE SECTION */}
-      <div className="rounded-md border bg-card">
+      <div className="border-b bg-card">
         <Table>
           <TableCaption className="border-t py-2">
             Showing {table.getFilteredRowModel().rows.length > 0 ? startIndex + 1 : 0}-{endIndex} of {table.getFilteredRowModel().rows.length} requests.
@@ -406,67 +440,7 @@ export function RequestTable({ requests }: { requests: RequestData[] }) {
         </Table>
       </div>
 
-      {/* PAGINATION AND ROW SELECTION INFO */}
-      {table.getFilteredRowModel().rows.length > 0 && (
-        <div className="flex items-center justify-between gap-4 px-2">
 
-          {/* SELECTION INFO */}
-          <div className="flex-1 text-sm text-muted-foreground">
-            {table.getFilteredSelectedRowModel().rows.length} of{" "}
-            {table.getFilteredRowModel().rows.length} row(s) selected.
-          </div>
-
-          <div className="flex items-center gap-3">
-            <Label htmlFor="select-rows-per-page" className="text-sm text-muted-foreground font-normal whitespace-nowrap">
-              Rows per page
-            </Label>
-            <Select
-              value={String(pageSize)}
-              onValueChange={(value) => table.setPageSize(Number(value))}
-            >
-              <SelectTrigger className="w-20 h-8" id="select-rows-per-page">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent align="start">
-                <SelectGroup>
-                  <SelectItem value="10">10</SelectItem>
-                  <SelectItem value="25">25</SelectItem>
-                  <SelectItem value="50">50</SelectItem>
-                  <SelectItem value="100">100</SelectItem>
-                </SelectGroup>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <Pagination className="mx-0 w-auto">
-            <PaginationContent>
-              <PaginationItem>
-                <PaginationPrevious
-                  onClick={(e) => {
-                    e.preventDefault();
-                    table.previousPage();
-                  }}
-                  className={!table.getCanPreviousPage() ? "pointer-events-none opacity-50" : "cursor-pointer"}
-                />
-              </PaginationItem>
-              <PaginationItem>
-                <div className="px-4 text-sm text-muted-foreground font-medium whitespace-nowrap">
-                  Page {table.getState().pagination.pageIndex + 1} of {table.getPageCount()}
-                </div>
-              </PaginationItem>
-              <PaginationItem>
-                <PaginationNext
-                  onClick={(e) => {
-                    e.preventDefault();
-                    table.nextPage();
-                  }}
-                  className={!table.getCanNextPage() ? "pointer-events-none opacity-50" : "cursor-pointer"}
-                />
-              </PaginationItem>
-            </PaginationContent>
-          </Pagination>
-        </div>
-      )}
     </div>
   )
 }

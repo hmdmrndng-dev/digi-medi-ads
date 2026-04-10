@@ -38,7 +38,7 @@ export default function RootLayout({
         <TooltipProvider>
           <SidebarProvider>
             <AppSidebar />
-            <main className="flex flex-1 flex-col overflow-hidden">
+            <main className="flex flex-1 flex-col w-full">
               <AppHeader />
               {children}
             </main>
