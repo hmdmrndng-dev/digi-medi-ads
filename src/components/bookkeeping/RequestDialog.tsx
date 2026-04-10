@@ -29,6 +29,7 @@ import { ServiceInvoice } from "./RequestCard/ServiceInvoice";
 import { Financial } from "./RequestCard/Financial";
 // IMPORT YOUR CONFIRM DIALOG
 import { ConfirmDialog } from "@/components/confirm-dialog";
+import { formatCurrency } from "@/lib/formatters";
 
 export function RequestDialog({
     projectCode,
@@ -68,14 +69,6 @@ export function RequestDialog({
                 .finally(() => setIsLoading(false));
         }
     }, [dialogOpen, projectCode, requestData]);
-
-    const formatCurrency = (amount: number | null | undefined) => {
-        if (amount === null || amount === undefined) return "";
-        return new Intl.NumberFormat("en-PH", {
-            style: "currency",
-            currency: "PHP",
-        }).format(amount);
-    };
 
     const formatDate = (dateString: string | null | undefined) => {
         if (!dateString) return "N/A";

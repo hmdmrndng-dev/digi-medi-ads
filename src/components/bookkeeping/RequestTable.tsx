@@ -1,13 +1,19 @@
 // src/components/bookkeeping/RequestTable.tsx
 "use client"
 
+import * as React from "react"
 import { useState, useTransition } from "react"
-import { Eye, Trash2 } from "lucide-react"
+import { Eye, Trash2, ArrowUpDown, ChevronDown } from "lucide-react"
 import {
   ColumnDef,
+  ColumnFiltersState,
+  SortingState,
+  VisibilityState,
   flexRender,
   getCoreRowModel,
+  getFilteredRowModel,
   getPaginationRowModel,
+  getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table"
 
@@ -21,6 +27,9 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Checkbox } from "@/components/ui/checkbox"
 import { RequestDialog } from "./RequestDialog"
 import { Label } from "@/components/ui/label"
 import {
@@ -40,6 +49,7 @@ import {
 } from "@/components/ui/select"
 import {
   DropdownMenu,
+  DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
@@ -47,88 +57,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { moveToTrash } from "@/actions/request/actions"
 import { ConfirmDialog } from "../confirm-dialog"
-
-type RequestData = {
-  id: string;
-  projectCode: string;
-  requestor: string | null;
-  storeName: string | null;
-  storeCategory: string | null;
-  deliveryStatus: string;
-  orNumber: string | null;
-  createdAt: Date;
-  products: {
-    productName: string;
-    numOfOrderedStock: number;
-    amount: number | null;
-  }[];
-}
-
-const formatCurrency = (amount: number | null | undefined) => {
-  if (!amount) return "-"
-  return new Intl.NumberFormat("en-PH", {
-    style: "currency",
-    currency: "PHP",
-  }).format(amount)
-}
-
-const getStatusBadge = (status: string | null) => {
-  const s = status?.toLowerCase() || "";
-  switch (s) {
-    case "pending":
-      return <Badge className="bg-yellow-100 text-yellow-800 hover:bg-yellow-100 border-yellow-200">Pending</Badge>;
-    case "delivered":
-    case "completed":
-      return <Badge className="bg-green-100 text-green-800 hover:bg-green-100 border-green-200">Delivered</Badge>;
-    case "cancelled":
-      return <Badge className="bg-gray-100 text-gray-800 hover:bg-gray-100 border-gray-200">Cancelled</Badge>;
-    default:
-      return <Badge variant="outline">{status || "Unknown"}</Badge>;
-  }
-};
-
-// --- DATA TABLE COLUMNS DEFINITION ---
-const columns: ColumnDef<RequestData>[] = [
-  {
-    accessorKey: "projectCode",
-    header: "Project Code",
-    cell: ({ row }) => <div className="font-medium">{row.getValue("projectCode")}</div>,
-  },
-  {
-    accessorKey: "requestor",
-    header: "Requestor",
-    cell: ({ row }) => row.getValue("requestor") || "-",
-  },
-  {
-    accessorKey: "storeCategory",
-    header: "Store Category",
-    cell: ({ row }) => row.getValue("storeCategory") || "-",
-  },
-  {
-    accessorKey: "storeName",
-    header: "Store Name",
-    cell: ({ row }) => row.getValue("storeName") || "-",
-  },
-  {
-    accessorKey: "deliveryStatus",
-    header: "Delivery Status",
-    cell: ({ row }) => getStatusBadge(row.getValue("deliveryStatus")),
-  },
-  {
-    id: "amountDue",
-    header: () => <div className="text-right">Amount Due</div>,
-    cell: ({ row }) => {
-      const products = row.original.products;
-      const total = products.reduce((sum, item) => sum + (item.amount || 0), 0);
-      return <div className="text-right">{formatCurrency(total)}</div>;
-    },
-  },
-  {
-    accessorKey: "orNumber",
-    header: "OR Number",
-    cell: ({ row }) => row.getValue("orNumber") || "-",
-  },
-];
+import { columns, RequestData } from "./request-columns"
 
 export function RequestTable({ requests }: { requests: RequestData[] }) {
   // --- TRANSITION STATE ---
@@ -144,12 +73,34 @@ export function RequestTable({ requests }: { requests: RequestData[] }) {
   const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 })
   const [activeRequest, setActiveRequest] = useState<RequestData | null>(null)
 
+  // --- TANSTACK TABLE STATES ---
+  const [sorting, setSorting] = useState<SortingState>([])
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
+  const [rowSelection, setRowSelection] = useState({})
+
   // --- TANSTACK TABLE INITIALIZATION ---
   const table = useReactTable({
     data: requests,
     columns,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
+
+    // 🔥 ADD THIS ONE LINE:
+    getRowId: (row) => row.id,
+
+    onSortingChange: setSorting,
+    onColumnFiltersChange: setColumnFilters,
+    onColumnVisibilityChange: setColumnVisibility,
+    onRowSelectionChange: setRowSelection,
+    state: {
+      sorting,
+      columnFilters,
+      columnVisibility,
+      rowSelection,
+    },
     initialState: {
       pagination: {
         pageSize: 25,
@@ -159,7 +110,7 @@ export function RequestTable({ requests }: { requests: RequestData[] }) {
 
   const { pageIndex, pageSize } = table.getState().pagination;
   const startIndex = pageIndex * pageSize;
-  const endIndex = Math.min(startIndex + pageSize, requests.length);
+  const endIndex = Math.min(startIndex + pageSize, table.getFilteredRowModel().rows.length);
 
   const handleRowClick = (e: React.MouseEvent, req: RequestData) => {
     setMenuPosition({ x: e.clientX, y: e.clientY })
@@ -254,11 +205,49 @@ export function RequestTable({ requests }: { requests: RequestData[] }) {
         </DropdownMenuContent>
       </DropdownMenu>
 
+      {/* TOOLBAR: FILTERING & VISIBILITY */}
+      <div className="flex items-center justify-between py-2">
+        <Input
+          placeholder="Filter project codes..."
+          value={(table.getColumn("projectCode")?.getFilterValue() as string) ?? ""}
+          onChange={(event) =>
+            table.getColumn("projectCode")?.setFilterValue(event.target.value)
+          }
+          className="max-w-sm"
+        />
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" className="ml-auto">
+              Columns <ChevronDown className="ml-2 h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            {table
+              .getAllColumns()
+              .filter((column) => column.getCanHide())
+              .map((column) => {
+                return (
+                  <DropdownMenuCheckboxItem
+                    key={column.id}
+                    className="capitalize"
+                    checked={column.getIsVisible()}
+                    onCheckedChange={(value) =>
+                      column.toggleVisibility(!!value)
+                    }
+                  >
+                    {column.id.replace(/([A-Z])/g, ' $1').trim()}
+                  </DropdownMenuCheckboxItem>
+                )
+              })}
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+
       {/* DATA TABLE SECTION */}
       <div className="rounded-md border bg-card">
         <Table>
           <TableCaption className="border-t py-2">
-            Showing {requests.length > 0 ? startIndex + 1 : 0}-{endIndex} of {requests.length} requests.
+            Showing {table.getFilteredRowModel().rows.length > 0 ? startIndex + 1 : 0}-{endIndex} of {table.getFilteredRowModel().rows.length} requests.
           </TableCaption>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
@@ -269,9 +258,9 @@ export function RequestTable({ requests }: { requests: RequestData[] }) {
                       {header.isPlaceholder
                         ? null
                         : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
-                          )}
+                          header.column.columnDef.header,
+                          header.getContext()
+                        )}
                     </TableHead>
                   )
                 })}
@@ -283,6 +272,7 @@ export function RequestTable({ requests }: { requests: RequestData[] }) {
               table.getRowModel().rows.map((row) => (
                 <TableRow
                   key={row.id}
+                  data-state={row.getIsSelected() && "selected"}
                   onClick={(e) => handleRowClick(e, row.original)}
                   className="cursor-pointer hover:bg-muted/50 transition-colors"
                 >
@@ -304,15 +294,22 @@ export function RequestTable({ requests }: { requests: RequestData[] }) {
         </Table>
       </div>
 
-      {/* PAGINATION SECTION */}
-      {requests.length > 0 && (
+      {/* PAGINATION AND ROW SELECTION INFO */}
+      {table.getFilteredRowModel().rows.length > 0 && (
         <div className="flex items-center justify-between gap-4 px-2">
+
+          {/* SELECTION INFO */}
+          <div className="flex-1 text-sm text-muted-foreground">
+            {table.getFilteredSelectedRowModel().rows.length} of{" "}
+            {table.getFilteredRowModel().rows.length} row(s) selected.
+          </div>
+
           <div className="flex items-center gap-3">
-            <Label htmlFor="select-rows-per-page" className="text-sm text-muted-foreground font-normal">
+            <Label htmlFor="select-rows-per-page" className="text-sm text-muted-foreground font-normal whitespace-nowrap">
               Rows per page
             </Label>
-            <Select 
-              value={String(pageSize)} 
+            <Select
+              value={String(pageSize)}
               onValueChange={(value) => table.setPageSize(Number(value))}
             >
               <SelectTrigger className="w-20 h-8" id="select-rows-per-page">
@@ -341,7 +338,7 @@ export function RequestTable({ requests }: { requests: RequestData[] }) {
                 />
               </PaginationItem>
               <PaginationItem>
-                <div className="px-4 text-sm text-muted-foreground font-medium">
+                <div className="px-4 text-sm text-muted-foreground font-medium whitespace-nowrap">
                   Page {table.getState().pagination.pageIndex + 1} of {table.getPageCount()}
                 </div>
               </PaginationItem>

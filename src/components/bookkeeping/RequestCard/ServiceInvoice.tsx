@@ -37,7 +37,7 @@ export function ServiceInvoice({ formData, isSaving, isEditing, handleAddRow, ha
                         </div>
                         <div className="w-[120px] space-y-2">
                             <Input
-                                type={isEditing ? "number" : "text"}
+                                type="number"
                                 placeholder="Amount Due"
                                 value={isEditing ? (sip.amountDue ?? "") : formatCurrency(sip.amountDue)}
                                 readOnly={!isEditing}

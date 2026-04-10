@@ -54,7 +54,7 @@ export function Product({ formData, isEditing, isSaving, handleAddRow, handleArr
                             </div>
                             <div className="w-[120px] space-y-2">
                                 <Input
-                                    type={isEditing ? "number" : "text"}
+                                    type="number"
                                     placeholder="Amount"
                                     value={isEditing ? product.amount : formatCurrency(product.amount)}
                                     readOnly={!isEditing}
