@@ -1,7 +1,16 @@
+// src/components/bookkeeping/RequestTable.tsx
 "use client"
 
 import { useState, useTransition } from "react"
 import { Eye, Trash2 } from "lucide-react"
+import {
+  ColumnDef,
+  flexRender,
+  getCoreRowModel,
+  getPaginationRowModel,
+  useReactTable,
+} from "@tanstack/react-table"
+
 import {
   Table,
   TableBody,
@@ -78,13 +87,52 @@ const getStatusBadge = (status: string | null) => {
   }
 };
 
+// --- DATA TABLE COLUMNS DEFINITION ---
+const columns: ColumnDef<RequestData>[] = [
+  {
+    accessorKey: "projectCode",
+    header: "Project Code",
+    cell: ({ row }) => <div className="font-medium">{row.getValue("projectCode")}</div>,
+  },
+  {
+    accessorKey: "requestor",
+    header: "Requestor",
+    cell: ({ row }) => row.getValue("requestor") || "-",
+  },
+  {
+    accessorKey: "storeCategory",
+    header: "Store Category",
+    cell: ({ row }) => row.getValue("storeCategory") || "-",
+  },
+  {
+    accessorKey: "storeName",
+    header: "Store Name",
+    cell: ({ row }) => row.getValue("storeName") || "-",
+  },
+  {
+    accessorKey: "deliveryStatus",
+    header: "Delivery Status",
+    cell: ({ row }) => getStatusBadge(row.getValue("deliveryStatus")),
+  },
+  {
+    id: "amountDue",
+    header: () => <div className="text-right">Amount Due</div>,
+    cell: ({ row }) => {
+      const products = row.original.products;
+      const total = products.reduce((sum, item) => sum + (item.amount || 0), 0);
+      return <div className="text-right">{formatCurrency(total)}</div>;
+    },
+  },
+  {
+    accessorKey: "orNumber",
+    header: "OR Number",
+    cell: ({ row }) => row.getValue("orNumber") || "-",
+  },
+];
+
 export function RequestTable({ requests }: { requests: RequestData[] }) {
   // --- TRANSITION STATE ---
   const [isPending, startTransition] = useTransition()
-
-  // --- PAGINATION STATE ---
-  const [rowsPerPage, setRowsPerPage] = useState(25)
-  const [currentPage, setCurrentPage] = useState(1)
 
   // --- DIALOG STATES ---
   const [selectedProjectCode, setSelectedProjectCode] = useState<string | null>(null)
@@ -96,26 +144,22 @@ export function RequestTable({ requests }: { requests: RequestData[] }) {
   const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 })
   const [activeRequest, setActiveRequest] = useState<RequestData | null>(null)
 
-  // --- PAGINATION LOGIC ---
-  const totalPages = Math.max(1, Math.ceil(requests.length / rowsPerPage))
-  const safeCurrentPage = Math.min(currentPage, totalPages)
-  const startIndex = (safeCurrentPage - 1) * rowsPerPage
-  const paginatedRequests = requests.slice(startIndex, startIndex + rowsPerPage)
+  // --- TANSTACK TABLE INITIALIZATION ---
+  const table = useReactTable({
+    data: requests,
+    columns,
+    getCoreRowModel: getCoreRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
+    initialState: {
+      pagination: {
+        pageSize: 25,
+      },
+    },
+  })
 
-  const handleRowsChange = (value: string) => {
-    setRowsPerPage(Number(value))
-    setCurrentPage(1)
-  }
-
-  const handlePrevious = (e: React.MouseEvent) => {
-    e.preventDefault()
-    if (safeCurrentPage > 1) setCurrentPage(p => p - 1)
-  }
-
-  const handleNext = (e: React.MouseEvent) => {
-    e.preventDefault()
-    if (safeCurrentPage < totalPages) setCurrentPage(p => p + 1)
-  }
+  const { pageIndex, pageSize } = table.getState().pagination;
+  const startIndex = pageIndex * pageSize;
+  const endIndex = Math.min(startIndex + pageSize, requests.length);
 
   const handleRowClick = (e: React.MouseEvent, req: RequestData) => {
     setMenuPosition({ x: e.clientX, y: e.clientY })
@@ -130,13 +174,11 @@ export function RequestTable({ requests }: { requests: RequestData[] }) {
     }
   }
 
-  // 1. Dropdown calls this to open the Alert Dialog
   const handleTrashClick = () => {
-    setMenuOpen(false) // Close dropdown first
-    setIsDeleteDialogOpen(true) // Open confirmation dialog
+    setMenuOpen(false)
+    setIsDeleteDialogOpen(true)
   }
 
-  // 2. Alert Dialog calls this to actually process the database action
   const handleConfirmTrash = () => {
     if (!activeRequest) return
 
@@ -212,45 +254,48 @@ export function RequestTable({ requests }: { requests: RequestData[] }) {
         </DropdownMenuContent>
       </DropdownMenu>
 
-      {/* TABLE SECTION */}
+      {/* DATA TABLE SECTION */}
       <div className="rounded-md border bg-card">
         <Table>
           <TableCaption className="border-t py-2">
-            Showing {startIndex + 1}-{Math.min(startIndex + rowsPerPage, requests.length)} of {requests.length} requests.
+            Showing {requests.length > 0 ? startIndex + 1 : 0}-{endIndex} of {requests.length} requests.
           </TableCaption>
           <TableHeader>
-            <TableRow>
-              <TableHead>Project Code</TableHead>
-              <TableHead>Requestor</TableHead>
-              <TableHead>Store Category</TableHead>
-              <TableHead>Store Name</TableHead>
-              <TableHead>Delivery Status</TableHead>
-              <TableHead className="text-right">Amount Due</TableHead>
-              <TableHead>OR Number</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {paginatedRequests.map((req) => (
-              <TableRow
-                key={req.id}
-                onClick={(e) => handleRowClick(e, req)}
-                className="cursor-pointer hover:bg-muted/50 transition-colors"
-              >
-                <TableCell className="font-medium">{req.projectCode}</TableCell>
-                <TableCell>{req.requestor || "-"}</TableCell>
-                <TableCell>{req.storeCategory || "-"}</TableCell>
-                <TableCell>{req.storeName || "-"}</TableCell>
-                <TableCell>{getStatusBadge(req.deliveryStatus)}</TableCell>
-                <TableCell className="text-right">
-                  {formatCurrency(req.products.reduce((sum, item) => sum + (item.amount || 0), 0))}
-                </TableCell>
-                <TableCell>{req.orNumber || "-"}</TableCell>
+            {table.getHeaderGroups().map((headerGroup) => (
+              <TableRow key={headerGroup.id}>
+                {headerGroup.headers.map((header) => {
+                  return (
+                    <TableHead key={header.id}>
+                      {header.isPlaceholder
+                        ? null
+                        : flexRender(
+                            header.column.columnDef.header,
+                            header.getContext()
+                          )}
+                    </TableHead>
+                  )
+                })}
               </TableRow>
             ))}
-
-            {requests.length === 0 && (
+          </TableHeader>
+          <TableBody>
+            {table.getRowModel().rows?.length ? (
+              table.getRowModel().rows.map((row) => (
+                <TableRow
+                  key={row.id}
+                  onClick={(e) => handleRowClick(e, row.original)}
+                  className="cursor-pointer hover:bg-muted/50 transition-colors"
+                >
+                  {row.getVisibleCells().map((cell) => (
+                    <TableCell key={cell.id}>
+                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                    </TableCell>
+                  ))}
+                </TableRow>
+              ))
+            ) : (
               <TableRow>
-                <TableCell colSpan={8} className="h-24 text-center text-muted-foreground">
+                <TableCell colSpan={columns.length} className="h-24 text-center text-muted-foreground">
                   No requests found.
                 </TableCell>
               </TableRow>
@@ -266,7 +311,10 @@ export function RequestTable({ requests }: { requests: RequestData[] }) {
             <Label htmlFor="select-rows-per-page" className="text-sm text-muted-foreground font-normal">
               Rows per page
             </Label>
-            <Select value={String(rowsPerPage)} onValueChange={handleRowsChange}>
+            <Select 
+              value={String(pageSize)} 
+              onValueChange={(value) => table.setPageSize(Number(value))}
+            >
               <SelectTrigger className="w-20 h-8" id="select-rows-per-page">
                 <SelectValue />
               </SelectTrigger>
@@ -285,19 +333,25 @@ export function RequestTable({ requests }: { requests: RequestData[] }) {
             <PaginationContent>
               <PaginationItem>
                 <PaginationPrevious
-                  onClick={handlePrevious}
-                  className={safeCurrentPage <= 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    table.previousPage();
+                  }}
+                  className={!table.getCanPreviousPage() ? "pointer-events-none opacity-50" : "cursor-pointer"}
                 />
               </PaginationItem>
               <PaginationItem>
                 <div className="px-4 text-sm text-muted-foreground font-medium">
-                  Page {safeCurrentPage} of {totalPages}
+                  Page {table.getState().pagination.pageIndex + 1} of {table.getPageCount()}
                 </div>
               </PaginationItem>
               <PaginationItem>
                 <PaginationNext
-                  onClick={handleNext}
-                  className={safeCurrentPage >= totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    table.nextPage();
+                  }}
+                  className={!table.getCanNextPage() ? "pointer-events-none opacity-50" : "cursor-pointer"}
                 />
               </PaginationItem>
             </PaginationContent>
