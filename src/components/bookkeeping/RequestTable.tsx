@@ -169,7 +169,6 @@ export function RequestTable({ requests }: { requests: RequestData[] }) {
 
   return (
     <div>
-
       {/* VIEW DETAILS DIALOG */}
       {selectedProjectCode && (
         <RequestDialog
@@ -248,7 +247,7 @@ export function RequestTable({ requests }: { requests: RequestData[] }) {
 
       {/* TOOLBARS WRAPPER */}
       {/* 🔥 Added sticky, top-16 (to sit right under your h-16 header), z-40, and a solid background */}
-      <div className="space-y-2 sticky top-16 z-40 bg-background border-b">
+      <div className="space-y-2 sticky top-16 z-40 bg-background border-b py-2">
 
         {/* TOP ROW: SEARCH & COLUMNS */}
         <div className="flex items-center justify-between">

@@ -50,7 +50,7 @@ export default async function Page() {
     }));
 
     return (
-        <div className="p-4 space-y-8">
+        <div className="p-4 space-y-2">
             <div className="flex items-center justify-between">
                 <div>
                     <h1 className="text-3xl font-bold tracking-tight">Project Requests</h1>
