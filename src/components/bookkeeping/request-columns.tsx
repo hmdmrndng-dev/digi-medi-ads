@@ -27,38 +27,13 @@ export type RequestData = {
 }
 
 export const columns: ColumnDef<RequestData>[] = [
-  {
-    id: "select",
-    header: ({ table }) => (
-      <Checkbox
-        checked={
-          table.getIsAllPageRowsSelected() ||
-          (table.getIsSomePageRowsSelected() && "indeterminate")
-        }
-        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-        aria-label="Select all"
-      />
-    ),
-    cell: ({ row }) => (
-      // Stop propagation so clicking the checkbox doesn't trigger the row's floating menu
-      <div onClick={(e) => e.stopPropagation()}>
-        <Checkbox
-          checked={row.getIsSelected()}
-          onCheckedChange={(value) => row.toggleSelected(!!value)}
-          aria-label="Select row"
-        />
-      </div>
-    ),
-    enableSorting: false,
-    enableHiding: false,
-  },
+
   {
     accessorKey: "projectCode",
     header: ({ column }) => {
       return (
         <Button
           variant="ghost"
-          className="-ml-4"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
           Project Code
@@ -66,7 +41,19 @@ export const columns: ColumnDef<RequestData>[] = [
         </Button>
       )
     },
-    cell: ({ row }) => <div className="font-medium">{row.getValue("projectCode")}</div>,
+    cell: ({ row }) => (
+      // 🔥 Flex container puts the checkbox and text side-by-side
+      <div className="flex items-center gap-3">
+        <div onClick={(e) => e.stopPropagation()}>
+          <Checkbox
+            checked={row.getIsSelected()}
+            onCheckedChange={(value) => row.toggleSelected(!!value)}
+            aria-label="Select row"
+          />
+        </div>
+        <span className="font-medium">{row.getValue("projectCode")}</span>
+      </div>
+    ),
   },
   {
     accessorKey: "requestor",
