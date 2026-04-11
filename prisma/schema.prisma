@@ -37,14 +37,14 @@ model Request {
   deliveryStatus String    @default("pending")
   orNumber       String?
   inTrash        Boolean   @default(false)
+  updatedBy      String
   createdAt      DateTime  @default(now()) @db.Timestamp(6)
   updatedAt      DateTime? @db.Timestamp(6)
 
-  products    RequestProduct[]
-  invoices    ServiceInvoices[]
-  deliveries  DeliveryReceipt[]
-  expenses    Expenses[]
-  collections CollectionReceipt[]
+  products   RequestProduct[]
+  invoices   InvoiceReceipt[]
+  deliveries DeliveryReceipt[]
+  expenses   Expenses[]
 }
 
 model RequestProduct {
@@ -78,28 +78,40 @@ model CollectionReceipt {
   receiptNo  String?
   amountPaid Decimal? @db.Decimal(10, 2)
 
-  createdAt DateTime  @default(now()) @db.Timestamp(6)
-  updatedAt DateTime? @db.Timestamp(6)
-
-  request_id String  @db.Uuid
-  request    Request @relation(fields: [request_id], references: [id], onDelete: Cascade)
+  createdAt   DateTime            @default(now()) @db.Timestamp(6)
+  updatedAt   DateTime?           @db.Timestamp(6)
+  allocations PaymentAllocation[]
 }
 
-model ServiceInvoices {
+model InvoiceReceipt {
   id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   invoiceNo String
   amountDue Decimal? @db.Decimal(10, 2)
 
-  createdAt DateTime  @default(now()) @db.Timestamp(6)
-  updatedAt DateTime? @db.Timestamp(6)
+  createdAt   DateTime            @default(now()) @db.Timestamp(6)
+  updatedAt   DateTime?           @db.Timestamp(6)
+  allocations PaymentAllocation[]
 
   request_id String  @db.Uuid
   request    Request @relation(fields: [request_id], references: [id], onDelete: Cascade)
 }
 
+model PaymentAllocation {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+
+  collectionId  String  @db.Uuid
+  invoiceId     String  @db.Uuid
+  amountApplied Decimal @db.Decimal(10, 2)
+
+  collection CollectionReceipt @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+  invoice    InvoiceReceipt    @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  @@unique([collectionId, invoiceId])
+}
+
 model User {
-  id       String  @id @db.Uuid
-  email    String? @unique
+  id       String   @id @db.Uuid
+  email    String?  @unique
   username String?
-  role     String  @default("user")
+  roles    String[] @default(["user"])
 }
