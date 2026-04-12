@@ -9,7 +9,6 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { getStatusBadge } from "@/components/bookkeeping/status" // Using the status config we just made
 import { formatCurrency } from "@/lib/formatters"
 
-// Export the type so the Table component can import it
 export type RequestData = {
   id: string;
   projectCode: string;
@@ -42,7 +41,6 @@ export const columns: ColumnDef<RequestData>[] = [
       )
     },
     cell: ({ row }) => (
-      // 🔥 Flex container puts the checkbox and text side-by-side
       <div className="flex items-center gap-3">
         <div onClick={(e) => e.stopPropagation()}>
           <Checkbox

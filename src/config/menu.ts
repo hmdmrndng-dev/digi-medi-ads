@@ -25,7 +25,7 @@ export const navData = {
       icon: IconBook,
       items: [
         { title: "Dashboard", url: "/bookkeeping/dashboard" },
-        { title: "Financial", url: "/bookkeeping/financial" },
+        { title: "Project", url: "/bookkeeping/project" },
         { title: "Expense", url: "/bookkeeping/expense" },
         { title: "Payables", url: "/bookkeeping/payables" },
         { title: "Accountable", url: "/bookkeeping/accountable" },

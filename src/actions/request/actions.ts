@@ -165,7 +165,7 @@ export async function updateRequestDetails(projectCode: string, payload: any) {
                     update: parsedSIs.toUpdate.map(si => ({
                         where: { id: si.id },
                         data: {
-                            invoiceNo: si.invoiceNo,
+                            receiptNo: si.receiptNo,
                             amountDue: Number(si.amountDue)
                         }
                     }))
@@ -190,7 +190,24 @@ export async function moveToTrash(id: string) {
         })
 
         // This forces Next.js to re-fetch the data so the table updates automatically
-        revalidatePath("/requests") // Adjust this path to wherever your table is displayed
+        revalidatePath("/project") // Adjust this path to wherever your table is displayed
+
+        return { success: true }
+    } catch (error) {
+        console.error("Failed to move request to trash:", error)
+        return { success: false, error: "Failed to move to trash" }
+    }
+}
+
+export async function restoreFromTrash(id: string) {
+    try {
+        await prisma.request.update({
+            where: { id },
+            data: { inTrash: false },
+        })
+
+        // This forces Next.js to re-fetch the data so the table updates automatically
+        revalidatePath("/project") // Adjust this path to wherever your table is displayed
 
         return { success: true }
     } catch (error) {

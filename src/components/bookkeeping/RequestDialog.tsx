@@ -19,7 +19,8 @@ import {
     SelectTrigger,
     SelectValue
 } from "@/components/ui/select";
-import { Edit2, Save, Loader2 } from "lucide-react";
+import { Save } from "lucide-react";
+import { IconEdit, IconLoader, IconLoader2 } from "@tabler/icons-react";
 import { getRequestDetails } from "@/actions/request/actions";
 import { updateRequestDetails } from "@/actions/request/actions";
 import { GeneralInformation } from "./RequestCard/GeneralInformation";
@@ -27,10 +28,8 @@ import { Product } from "./RequestCard/Product";
 import { DeliveryReceipt } from "./RequestCard/DeliveryReceipt";
 import { ServiceInvoice } from "./RequestCard/ServiceInvoice";
 import { Financial } from "./RequestCard/Financial";
-// IMPORT YOUR CONFIRM DIALOG
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { formatCurrency } from "@/lib/formatters";
-
 export function RequestDialog({
     projectCode,
     children,
@@ -130,7 +129,7 @@ export function RequestDialog({
         } else if (arrayName === 'deliveryReceipts') {
             newRow = { id: `temp-${Date.now()}`, receiptNo: "", dateDelivered: new Date().toISOString() };
         } else {
-            newRow = { id: `temp-${Date.now()}`, invoiceNo: "", amountDue: 0 };
+            newRow = { id: `temp-${Date.now()}`, receiptNo: "", amountDue: 0 };
         }
 
         setFormData((prev: any) => ({
@@ -207,7 +206,7 @@ export function RequestDialog({
 
                     <div>
                         {isLoading ? (
-                            <div className="flex items-center justify-center p-12"><Loader2 className="w-8 h-8 animate-spin text-muted-foreground" /></div>
+                            <div className="flex items-center justify-center p-12"><IconLoader className="w-8 h-8 animate-spin text-muted-foreground" /></div>
                         ) : !formData ? (
                             <div className="flex items-center justify-center p-12 text-muted-foreground text-destructive">
                                 Failed to load data.
@@ -250,7 +249,7 @@ export function RequestDialog({
                                             </Button>
 
                                             <Button type="submit" disabled={isSaving}>
-                                                {isSaving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
+                                                {isSaving ? <IconLoader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
                                                 Save Changes
                                             </Button>
                                         </>
@@ -274,7 +273,7 @@ export function RequestDialog({
                                                     setIsEditing(true);
                                                 }}
                                             >
-                                                <Edit2 className="w-4 h-4 mr-2" /> Edit Details
+                                                <IconEdit className="w-4 h-4 mr-2" /> Edit Details
                                             </Button>
                                         </>
                                     )}
