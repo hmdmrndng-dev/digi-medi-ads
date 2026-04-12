@@ -60,7 +60,6 @@ export function RequestTable({ requests }: { requests: RequestData[] }) {
     initialState: { pagination: { pageSize: 25 } },
   })
 
-  // --- HANDLERS ---
   const handleRowClick = (e: React.MouseEvent, req: RequestData) => {
     setMenuPosition({ x: e.clientX, y: e.clientY })
     setActiveRequest(req)

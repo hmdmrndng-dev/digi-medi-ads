@@ -42,6 +42,7 @@ export async function createRequest(formData: FormData) {
             tinNo: tinNo,
             storeCategory: storeCategory,
             storeName: storeName,
+            updatedBy: "developer",
 
             products: {
                 create: formattedProducts,
@@ -165,7 +166,7 @@ export async function updateRequestDetails(projectCode: string, payload: any) {
                     update: parsedSIs.toUpdate.map(si => ({
                         where: { id: si.id },
                         data: {
-                            receiptNo: si.receiptNo,
+                            invoiceNo: si.invoiceNo,
                             amountDue: Number(si.amountDue)
                         }
                     }))
@@ -205,13 +206,23 @@ export async function restoreFromTrash(id: string) {
             where: { id },
             data: { inTrash: false },
         })
-
-        // This forces Next.js to re-fetch the data so the table updates automatically
-        revalidatePath("/project") // Adjust this path to wherever your table is displayed
-
+        revalidatePath("/project")
         return { success: true }
     } catch (error) {
-        console.error("Failed to move request to trash:", error)
-        return { success: false, error: "Failed to move to trash" }
+        console.error("Failed to restore request from trash:", error)
+        return { success: false, error: "Failed to restore from trash" }
+    }
+}
+
+export async function permanentlyDelete(id: string) {
+    try {
+        await prisma.request.delete({
+            where: { id },
+        })
+        revalidatePath("/project")
+        return { success: true }
+    } catch (error) {
+        console.error("Failed to permanently delete request:", error)
+        return { success: false, error: "Failed to permanently delete" }
     }
 }

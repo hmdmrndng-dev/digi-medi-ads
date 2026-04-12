@@ -129,7 +129,7 @@ export function RequestDialog({
         } else if (arrayName === 'deliveryReceipts') {
             newRow = { id: `temp-${Date.now()}`, receiptNo: "", dateDelivered: new Date().toISOString() };
         } else {
-            newRow = { id: `temp-${Date.now()}`, receiptNo: "", amountDue: 0 };
+            newRow = { id: `temp-${Date.now()}`, invoiceNo: "", amountDue: 0 };
         }
 
         setFormData((prev: any) => ({

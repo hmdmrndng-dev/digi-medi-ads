@@ -28,9 +28,9 @@ export function ServiceInvoice({ formData, isSaving, isEditing, handleAddRow, ha
                             <Input
                                 type="text"
                                 placeholder="SI Number"
-                                value={sip.receiptNo || ""}
+                                value={sip.invoiceNo || ""}
                                 readOnly={!isEditing}
-                                onChange={(e) => handleArrayChange('invoices', index, 'receiptNo', e.target.value)}
+                                onChange={(e) => handleArrayChange('invoices', index, 'invoiceNo', e.target.value)}
                                 className={`${!isEditing ? "readOnlyInput" : ""}`}
                                 required
                             />

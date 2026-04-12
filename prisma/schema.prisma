@@ -42,7 +42,7 @@ model Request {
   updatedAt      DateTime? @db.Timestamp(6)
 
   products   RequestProduct[]
-  invoices   InvoiceReceipt[]
+  invoices   ServiceInvoice[]
   deliveries DeliveryReceipt[]
   expenses   Expenses[]
 }
@@ -83,9 +83,9 @@ model CollectionReceipt {
   allocations PaymentAllocation[]
 }
 
-model InvoiceReceipt {
+model ServiceInvoice {
   id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  receiptNo String   @unique
+  invoiceNo String   @unique
   amountDue Decimal? @db.Decimal(10, 2)
 
   createdAt   DateTime            @default(now()) @db.Timestamp(6)
@@ -104,7 +104,7 @@ model PaymentAllocation {
   amountApplied Decimal @db.Decimal(10, 2)
 
   collection CollectionReceipt @relation(fields: [collectionId], references: [id], onDelete: Cascade)
-  invoice    InvoiceReceipt    @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  invoice    ServiceInvoice    @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
 
   @@unique([collectionId, invoiceId])
 }

@@ -13,8 +13,8 @@ import {
     DialogTitle,
     DialogTrigger,
 } from "@/components/ui/dialog";
-import { Trash2, Plus } from "lucide-react";
 import { createRequest } from "@/actions/request/actions";
+import { IconPlus, IconTrash } from "@tabler/icons-react";
 
 export function CreateRequestDialog({ expectedProjectCode }: { expectedProjectCode: string }) {
     const [open, setOpen] = useState(false);
@@ -159,8 +159,7 @@ export function CreateRequestDialog({ expectedProjectCode }: { expectedProjectCo
                                 onClick={handleAddProduct}
                                 disabled={isPending}
                             >
-                                <Plus className="w-4 h-4 mr-2" />
-                                Add Item
+                                <IconPlus className="w-4 h-4" />
                             </Button>
                         </div>
 
@@ -208,7 +207,7 @@ export function CreateRequestDialog({ expectedProjectCode }: { expectedProjectCo
                                     onClick={() => handleRemoveProduct(index)}
                                     disabled={products.length === 1 || isPending}
                                 >
-                                    <Trash2 className="w-4 h-4" />
+                                    <IconTrash className="w-4 h-4" />
                                 </Button>
                             </div>
                         ))}
