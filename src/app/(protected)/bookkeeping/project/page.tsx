@@ -1,4 +1,4 @@
-// src/app/bookkeeping/(protected)/financial/page.tsx
+// src/app/bookkeeping/(protected)/project/page.tsx
 import { CreateRequestDialog } from "@/components/bookkeeping/CreateRequestDialog";
 import { RequestTable } from "@/components/bookkeeping/RequestTable";
 import { prisma } from "@/lib/prisma";

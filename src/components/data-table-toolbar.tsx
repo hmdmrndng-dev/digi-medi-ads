@@ -1,7 +1,6 @@
 "use client"
 
 import { Table, VisibilityState } from "@tanstack/react-table"
-import { ChevronDown, RefreshCw, Trash2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Input } from "@/components/ui/input"
@@ -18,6 +17,7 @@ import {
     PaginationNext,
     PaginationPrevious,
 } from "@/components/ui/pagination"
+import { IconChevronDown, IconRefresh } from "@tabler/icons-react"
 
 interface TableToolbarProps<TData> {
     table: Table<TData>
@@ -39,7 +39,7 @@ interface TableToolbarProps<TData> {
     onNextPage: () => void
     isPending?: boolean
     onRefresh?: () => void
-    bulkActions?: (selectedCount: number) => React.ReactNode  
+    bulkActions?: (selectedCount: number) => React.ReactNode
 }
 export function TableToolbar<TData>({
     table,
@@ -76,7 +76,7 @@ export function TableToolbar<TData>({
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <Button variant="outline" size="sm" className="ml-auto h-9">
-                            Columns <ChevronDown className="ml-2 h-4 w-4" />
+                            Columns <IconChevronDown className="ml-2 h-4 w-4" />
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
@@ -87,7 +87,7 @@ export function TableToolbar<TData>({
                                 <DropdownMenuCheckboxItem
                                     key={col.id}
                                     className="capitalize"
-                                    checked={columnVisibility[col.id] !== false}  // 👈 read from prop, not table
+                                    checked={columnVisibility[col.id] !== false}  
                                     onCheckedChange={(value) => col.toggleVisibility(!!value)}
                                 >
                                     {col.id.replace(/([A-Z])/g, " $1").trim()}
@@ -123,7 +123,7 @@ export function TableToolbar<TData>({
                                 className="h-9 w-9 text-muted-foreground"
                                 title="Refresh"
                             >
-                                <RefreshCw className={`h-4 w-4 ${isPending ? "animate-spin" : ""}`} />
+                                <IconRefresh className={`h-4 w-4 ${isPending ? "animate-spin" : ""}`} />
                             </Button>
                         </div>
                     )}

@@ -1,4 +1,4 @@
-// src/app/bookkeeping/(protected)/financial/CreateRequestDialog.tsx
+// src/app/bookkeeping/(protected)/project/CreateRequestDialog.tsx
 "use client";
 
 import { useState, useTransition, useRef } from "react";

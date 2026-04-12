@@ -29,6 +29,7 @@ export const columns: ColumnDef<RequestData>[] = [
 
   {
     accessorKey: "projectCode",
+    enableHiding: false,
     header: ({ column }) => {
       return (
         <Button

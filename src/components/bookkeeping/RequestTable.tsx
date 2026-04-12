@@ -211,6 +211,7 @@ export function RequestTable({ requests }: { requests: RequestData[] }) {
       {/* TABLE*/}
       <DataTable
         table={table}
+        columnVisibility={columnVisibility}
         onRowClick={handleRowClick}
         emptyMessage="No requests found."
       />

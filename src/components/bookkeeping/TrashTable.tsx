@@ -256,6 +256,7 @@ export function TrashTable({ requests }: { requests: RequestData[] }) {
             {/* TABLE */}
             <DataTable
                 table={table}
+                columnVisibility={columnVisibility}
                 onRowClick={handleRowClick}
                 emptyMessage="Trash is empty."
             />

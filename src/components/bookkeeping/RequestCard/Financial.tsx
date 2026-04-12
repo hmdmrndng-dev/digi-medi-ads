@@ -17,7 +17,7 @@ export function Financial({ formData, formatCurrency }: any) {
                             .reduce((sum: number, item: any) => sum + (Number(item.amount) || 0), 0)
                     )}
                     readOnly
-                    className="readOnlyInput font-medium bg-muted/30"
+                    className="font-medium bg-muted/30"
                 />
             </div>
             <div className="space-y-2">
@@ -30,7 +30,7 @@ export function Financial({ formData, formatCurrency }: any) {
                         ) || 0) / 1.12
                     )}
                     readOnly
-                    className="readOnlyInput font-medium bg-muted/30"
+                    className="font-medium bg-muted/30"
                 />
             </div>
             <div className="space-y-2">
@@ -43,7 +43,7 @@ export function Financial({ formData, formatCurrency }: any) {
                         ) || 0) / 1.12 * 0.12
                     )}
                     readOnly
-                    className="readOnlyInput font-medium bg-muted/30"
+                    className="font-medium bg-muted/30"
                 />
             </div>
             <div className="space-y-2">
@@ -54,7 +54,7 @@ export function Financial({ formData, formatCurrency }: any) {
                         formData.serviceInvoicePayment?.reduce((sum: number, payment: any) => sum + (Number(payment.amountPaid) || 0), 0)
                     )}
                     readOnly
-                    className="readOnlyInput font-medium bg-muted/30"
+                    className="font-medium bg-muted/30"
                 />
             </div>
         </div>

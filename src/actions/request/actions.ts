@@ -50,7 +50,7 @@ export async function createRequest(formData: FormData) {
         },
     });
 
-    redirect("/bookkeeping/financial");
+    redirect("/bookkeeping/project");
 }
 
 export async function getRequestDetails(projectCode: string) {
@@ -174,7 +174,7 @@ export async function updateRequestDetails(projectCode: string, payload: any) {
             }
         });
 
-        revalidatePath("/bookkeeping/financial");
+        revalidatePath("/bookkeeping/project");
         return { success: true, data: updatedRequest };
 
     } catch (error) {

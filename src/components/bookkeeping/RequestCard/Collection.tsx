@@ -31,7 +31,7 @@ export function Collection({ formData, isSaving, isEditing, handleAddRow, handle
                                 value={sip.receiptNo || ""}
                                 readOnly={!isEditing}
                                 onChange={(e) => handleArrayChange('invoices', index, 'receiptNo', e.target.value)}
-                                className={`${!isEditing ? "readOnlyInput" : ""}`}
+                                className={`${!isEditing ? "font-medium bg-muted/30" : ""}`}
                                 required
                             />
                         </div>
@@ -42,7 +42,7 @@ export function Collection({ formData, isSaving, isEditing, handleAddRow, handle
                                 value={isEditing ? (sip.amountDue ?? "") : formatCurrency(sip.amountDue)}
                                 readOnly={!isEditing}
                                 onChange={(e) => handleArrayChange('invoices', index, 'amountDue', e.target.value)}
-                                className={`${!isEditing ? "readOnlyInput" : ""}`}
+                                className={`${!isEditing ? "font-medium bg-muted/30" : ""}`}
                                 required
                             />
                         </div>

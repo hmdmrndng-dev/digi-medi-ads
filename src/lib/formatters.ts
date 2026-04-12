@@ -6,3 +6,10 @@ export const formatCurrency = (amount: number | null | undefined) => {
         currency: "PHP",
     }).format(amount)
 }
+
+export const formatDate = (dateString: string | null | undefined) => {
+    if (!dateString) return "N/A";
+    return new Date(dateString).toLocaleDateString("en-US", {
+        year: "numeric", month: "short", day: "numeric",
+    });
+};
