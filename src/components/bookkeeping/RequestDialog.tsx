@@ -103,11 +103,14 @@ export function RequestDialog({
             if (response.success) {
                 setRequestData(updatedPayload);
                 setFormData(updatedPayload);
+                return response; 
             } else {
                 console.error(`Failed to save ${sectionName}:`, response.error);
+                return response; 
             }
         } catch (error) {
             console.error(`Error saving ${sectionName}:`, error);
+            return { success: false, error: "Something went wrong saving the section." };
         }
     };
 

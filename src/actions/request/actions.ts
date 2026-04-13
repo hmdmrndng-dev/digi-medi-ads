@@ -114,6 +114,65 @@ export async function updateRequestDetails(projectCode: string, payload: any) {
         const parsedDRs = separateData(deliveries);
         const parsedSIs = separateData(invoices);
 
+        // ========================================================================
+        // 1. PRE-CHECK FOR DUPLICATE INVOICES
+        // We do this so we can tell the frontend EXACTLY which invoiceNo failed
+        // ========================================================================
+        const allIncomingInvoices = [...parsedSIs.toCreate, ...parsedSIs.toUpdate];
+        const invoiceNosToCheck = allIncomingInvoices.map(si => si.invoiceNo).filter(Boolean);
+
+        if (invoiceNosToCheck.length > 0) {
+            // Note: Change 'invoice' below to your actual Prisma model name for invoices (e.g., serviceInvoice)
+            const existingDuplicateInvoices = await prisma.serviceInvoice.findMany({
+                where: {
+                    invoiceNo: { in: invoiceNosToCheck },
+                    // We must exclude the IDs currently in this form, otherwise 
+                    // updating an existing row will flag itself as a duplicate!
+                    id: { notIn: parsedSIs.existingIds.length > 0 ? parsedSIs.existingIds : undefined }
+                },
+                select: { invoiceNo: true }
+            });
+
+            if (existingDuplicateInvoices.length > 0) {
+                // Grab the first duplicate we found
+                const badInvoice = existingDuplicateInvoices[0].invoiceNo;
+                
+                // Return the EXACT number in the string so the frontend can highlight it
+                return {
+                    success: false,
+                    error: `This Service Invoice Number '${badInvoice}' already exists. Please use a unique SI number.`
+                };
+            }
+        }
+
+        // ========================================================================
+        // 2. PRE-CHECK FOR DUPLICATE DELIVERIES (Optional but recommended)
+        // ========================================================================
+        const allIncomingDRs = [...parsedDRs.toCreate, ...parsedDRs.toUpdate];
+        const receiptNosToCheck = allIncomingDRs.map(dr => dr.receiptNo).filter(Boolean);
+
+        if (receiptNosToCheck.length > 0) {
+            // Note: Change 'delivery' below to your actual Prisma model name
+            const existingDuplicateDRs = await prisma.deliveryReceipt.findMany({
+                where: {
+                    receiptNo: { in: receiptNosToCheck },
+                    id: { notIn: parsedDRs.existingIds.length > 0 ? parsedDRs.existingIds : undefined }
+                },
+                select: { receiptNo: true }
+            });
+
+            if (existingDuplicateDRs.length > 0) {
+                const badReceipt = existingDuplicateDRs[0].receiptNo;
+                return {
+                    success: false,
+                    error: `This Delivery Receipt Number '${badReceipt}' already exists. Please use a unique DR number.`
+                };
+            }
+        }
+
+        // ========================================================================
+        // 3. EXECUTE MAIN UPDATE
+        // ========================================================================
         const updatedRequest = await prisma.request.update({
             where: { projectCode },
             data: {
@@ -177,9 +236,22 @@ export async function updateRequestDetails(projectCode: string, payload: any) {
         revalidatePath("/bookkeeping/project");
         return { success: true, data: updatedRequest };
 
-    } catch (error) {
+    } catch (error: any) {
         console.error("Failed to update request:", error);
-        return { success: false, error: "Failed to update request details." };
+
+        // Fallback for Prisma P2002 just in case
+        if (error.code === 'P2002') {
+            const target = error.meta?.target;
+            if (target?.includes('receiptNo')) {
+                return { success: false, error: "A Delivery Receipt Number in this list already exists." };
+            }
+            if (target?.includes('invoiceNo')) {
+                return { success: false, error: "A Service Invoice Number in this list already exists." };
+            }
+            return { success: false, error: "A record with this identifier already exists in the system." };
+        }
+
+        return { success: false, error: "Failed to update request details. Please try again." };
     }
 }
 

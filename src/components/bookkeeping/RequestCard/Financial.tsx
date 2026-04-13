@@ -8,7 +8,7 @@ export function Financial({ formData, formatCurrency }: any) {
                 <Label className="text-base font-semibold">Financials</Label>
             </div>
             <div className="space-y-2">
-                <Label>Total Amount Due</Label>
+                <Label>Amount Due</Label>
                 <Input
                     type="text"
                     value={formatCurrency(

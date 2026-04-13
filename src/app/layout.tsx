@@ -6,6 +6,7 @@ import { SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 import { TooltipProvider } from "@/components/ui/tooltip"
 import { AppHeader } from "@/components/app-header";
+import { Toaster } from "sonner";
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-sans' });
 
@@ -41,6 +42,7 @@ export default function RootLayout({
             <main className="flex flex-1 flex-col w-full">
               <AppHeader />
               {children}
+              <Toaster position="bottom-right"/>
             </main>
           </SidebarProvider>
         </TooltipProvider>
