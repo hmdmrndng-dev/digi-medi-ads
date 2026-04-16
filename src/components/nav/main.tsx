@@ -41,7 +41,13 @@ export function NavMain({
         }[]
     }[]
 }) {
-    const { state } = useSidebar()
+    const { state, isMobile, setOpenMobile } = useSidebar()
+
+    const handleNavClick = React.useCallback(() => {
+        if (isMobile) {
+            setOpenMobile(false)
+        }
+    }, [isMobile, setOpenMobile])
 
     const [openItems, setOpenItems] = React.useState<Record<string, boolean>>(() =>
         items.reduce<Record<string, boolean>>((acc, item) => {
@@ -60,7 +66,7 @@ export function NavMain({
                     // --------------------------------------------------------
                     // GOOGLE-STYLE FLYOUT CARD (When Sidebar is Closed)
                     // --------------------------------------------------------
-                    if (state === "collapsed") {
+                    if (state === "collapsed" && !isMobile) {
                         return (
                             <SidebarMenuItem key={item.title}>
                                 {hasSubItems ? (
@@ -90,6 +96,7 @@ export function NavMain({
                                                     <Link
                                                         key={subItem.title}
                                                         href={subItem.url}
+                                                        onClick={handleNavClick}
                                                         className="block px-2 py-1.5 text-sm rounded-md hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
                                                     >
                                                         {subItem.title}
@@ -100,7 +107,7 @@ export function NavMain({
                                     </HoverCard>
                                 ) : (
                                     <SidebarMenuButton asChild tooltip={item.title}>
-                                        <Link href={item.url}>
+                                        <Link href={item.url} onClick={handleNavClick}>
                                             {item.icon && <item.icon />}
                                             <span>{item.title}</span>
                                         </Link>
@@ -125,7 +132,7 @@ export function NavMain({
                         >
                             <SidebarMenuItem>
                                 <SidebarMenuButton asChild tooltip={item.title}>
-                                    <Link href={item.url}>
+                                    <Link href={item.url} onClick={handleNavClick}>
                                         {item.icon && <item.icon />}
                                         <span>{item.title}</span>
                                     </Link>
@@ -147,7 +154,7 @@ export function NavMain({
                                         {item.items?.map((subItem) => (
                                             <SidebarMenuSubItem key={subItem.title}>
                                                 <SidebarMenuSubButton asChild>
-                                                    <Link href={subItem.url}>
+                                                    <Link href={subItem.url} onClick={handleNavClick}>
                                                         <span>{subItem.title}</span>
                                                     </Link>
                                                 </SidebarMenuSubButton>
