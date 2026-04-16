@@ -32,8 +32,8 @@ model Request {
   projectCode    String    @unique
   requestor      String?
   storeName      String?
-  tinNo          String?
   storeCategory  String?
+  tinNo          String?
   deliveryStatus String    @default("pending")
   orNumber       String?
   inTrash        Boolean   @default(false)
@@ -41,59 +41,99 @@ model Request {
   createdAt      DateTime  @default(now()) @db.Timestamp(6)
   updatedAt      DateTime? @db.Timestamp(6)
 
-  products   RequestProduct[]
-  invoices   ServiceInvoice[]
-  deliveries DeliveryReceipt[]
-  expenses   Expenses[]
+  purchaseOrders PurchaseOrder[]
+  expenses       Expenses[]
 }
 
-model RequestProduct {
-  id                String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  purchaseOrderNo   String?
-  productName       String
-  numOfOrderedStock Int
-  amount            Decimal?  @db.Decimal(10, 2)
-  status            Boolean   @default(true)
-  createdAt         DateTime  @default(now()) @db.Timestamp(6)
-  updatedAt         DateTime? @db.Timestamp(6)
+model PurchaseOrder {
+  id       String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  poNumber String  @unique
+  status   Boolean @default(true)
 
   request_id String  @db.Uuid
   request    Request @relation(fields: [request_id], references: [id], onDelete: Cascade)
+
+  products Product[]
+
+  createdAt DateTime  @default(now()) @db.Timestamp(6)
+  updatedAt DateTime? @db.Timestamp(6)
+}
+
+model Product {
+  id                String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  productName       String
+  numOfOrderedStock Int
+  amount            Decimal? @db.Decimal(10, 2)
+  status            Boolean  @default(true)
+
+  createdAt DateTime  @default(now()) @db.Timestamp(6)
+  updatedAt DateTime? @db.Timestamp(6)
+
+  purchaseOrder_id String        @db.Uuid
+  purchaseOrder    PurchaseOrder @relation(fields: [purchaseOrder_id], references: [id], onDelete: Cascade)
+
+  deliveryItems DeliveryItem[]
+  invoiceItems  InvoiceItem[]
 }
 
 model DeliveryReceipt {
   id            String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   receiptNo     String    @unique
   dateDelivered DateTime? @db.Timestamp(6)
+  status        Boolean   @default(true)
 
   createdAt DateTime  @default(now()) @db.Timestamp(6)
   updatedAt DateTime? @db.Timestamp(6)
 
-  request_id String  @db.Uuid
-  request    Request @relation(fields: [request_id], references: [id], onDelete: Cascade)
+  items DeliveryItem[]
 }
 
-model CollectionReceipt {
-  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  receiptNo  String   @unique
-  amountPaid Decimal? @db.Decimal(10, 2)
+model DeliveryItem {
+  id                String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  quantityDelivered Int
 
-  createdAt   DateTime            @default(now()) @db.Timestamp(6)
-  updatedAt   DateTime?           @db.Timestamp(6)
-  allocations PaymentAllocation[]
+  product_id String  @db.Uuid
+  product    Product @relation(fields: [product_id], references: [id], onDelete: Cascade)
+
+  deliveryReceipt_id String          @db.Uuid
+  deliveryReceipt    DeliveryReceipt @relation(fields: [deliveryReceipt_id], references: [id], onDelete: Cascade)
 }
 
 model ServiceInvoice {
   id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   invoiceNo String   @unique
   amountDue Decimal? @db.Decimal(10, 2)
+  status    Boolean  @default(true)
 
-  createdAt   DateTime            @default(now()) @db.Timestamp(6)
-  updatedAt   DateTime?           @db.Timestamp(6)
+  createdAt DateTime  @default(now()) @db.Timestamp(6)
+  updatedAt DateTime? @db.Timestamp(6)
+
+  items       InvoiceItem[]
   allocations PaymentAllocation[]
+}
 
-  request_id String  @db.Uuid
-  request    Request @relation(fields: [request_id], references: [id], onDelete: Cascade)
+model InvoiceItem {
+  id             String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  quantityBilled Int
+  amountBilled   Decimal? @db.Decimal(10, 2)
+
+  product_id String  @db.Uuid
+  product    Product @relation(fields: [product_id], references: [id], onDelete: Cascade)
+
+  serviceInvoice_id String         @db.Uuid
+  serviceInvoice    ServiceInvoice @relation(fields: [serviceInvoice_id], references: [id], onDelete: Cascade)
+}
+
+model CollectionReceipt {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  receiptNo  String   @unique
+  amountPaid Decimal? @db.Decimal(10, 2)
+  status     Boolean  @default(true)
+
+  createdAt DateTime  @default(now()) @db.Timestamp(6)
+  updatedAt DateTime? @db.Timestamp(6)
+
+  allocations PaymentAllocation[]
 }
 
 model PaymentAllocation {

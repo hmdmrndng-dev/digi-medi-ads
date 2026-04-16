@@ -1,6 +1,5 @@
 // src/config/menu.ts
-import { Settings2, SquareTerminal } from "lucide-react"
-import { IconBook } from "@tabler/icons-react"
+import { IconBook, IconSettings, IconSpeakerphone } from "@tabler/icons-react"
 
 export const navData = {
   user: {
@@ -12,8 +11,7 @@ export const navData = {
     {
       title: "Digital Media Advertising",
       url: "/",
-      icon: SquareTerminal,
-      isActive: true,
+      icon: IconSpeakerphone,
       items: [
         { title: "Home", url: "/" },
         { title: "About us", url: "/about" },
@@ -21,7 +19,7 @@ export const navData = {
     },
     {
       title: "Bookkeeping",
-      url: "/bookkeeping",
+      url: "/bookkeeping/dashboard",
       icon: IconBook,
       items: [
         { title: "Dashboard", url: "/bookkeeping/dashboard" },
@@ -34,8 +32,8 @@ export const navData = {
     },
     {
       title: "Settings",
-      url: "/settings",
-      icon: Settings2,
+      url: "/settings/general",
+      icon: IconSettings,
       items: [
         { title: "General", url: "/settings/general" },
       ],

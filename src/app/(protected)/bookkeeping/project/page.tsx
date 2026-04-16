@@ -1,68 +1,36 @@
-// src/app/bookkeeping/(protected)/project/page.tsx
-import { CreateRequestDialog } from "@/components/bookkeeping/CreateRequestDialog";
-import { RequestTable } from "@/components/bookkeeping/RequestTable";
+// src/app/bookkeeping/project/page.tsx
+
+import ProjectPage from "@/components/bookkeeping/ProjectPage";
+import { RequestData } from "@/components/bookkeeping/request-columns";
 import { prisma } from "@/lib/prisma";
 
 export default async function Page() {
-    const currentYear = new Date().getFullYear();
-
-    const currentYearCount = await prisma.request.count({
-        where: {
-            projectCode: {
-                startsWith: `${currentYear}-`,
-            },
-        },
-    });
-
-    const nextNumber = currentYearCount + 1;
-    const expectedProjectCode = `${currentYear}-${String(nextNumber).padStart(4, '0')}`;
-
-    const rawRequests = await prisma.request.findMany({
-        where: {
-            inTrash: false
-        },
-        orderBy: {
-            createdAt: 'desc'
-        },
+    const requests = await prisma.request.findMany({
+        where: { inTrash: false },
         include: {
-            products: true,
-        }
+            purchaseOrders: {
+                include: {
+                    products: true
+                }
+            }
+        },
+        orderBy: { createdAt: "desc" },
     });
 
-    const safeRequests = rawRequests.map((req) => ({
-        id: req.id,
-        projectCode: req.projectCode,
-        requestor: req.requestor || null,
-        tinNo: req.tinNo || null,
-        storeName: req.storeName || null,
-        storeCategory: req.storeCategory || null,
-        deliveryStatus: req.deliveryStatus,
-        orNumber: req.orNumber || null,
-        createdAt: req.createdAt,
-
-        products: req.products.map(item => ({
-            purchaseOrderNo: item.purchaseOrderNo,
-            productName: item.productName,
-            numOfOrderedStock: item.numOfOrderedStock,
-            amount: item.amount ? Number(item.amount) : null,
-            status: item.status
-        }))
+    const formattedRequests: RequestData[] = requests.map((req) => ({
+        ...req,
+        purchaseOrders: req.purchaseOrders.map((po) => ({
+            ...po,
+            products: po.products.map((p) => ({
+                ...p,
+                amount: p.amount ? Number(p.amount) : 0,
+            })),
+        })),
     }));
 
     return (
-        <div className="p-4 space-y-2">
-            <div className="flex items-center justify-between">
-                <div>
-                    <h1 className="text-3xl font-bold tracking-tight">Project Requests</h1>
-                    <p className="text-muted-foreground">
-                        Manage and track all product orders and deliveries.
-                    </p>
-                </div>
-
-                <CreateRequestDialog expectedProjectCode={expectedProjectCode} />
-            </div>
-
-            <RequestTable requests={safeRequests} />
+        <div className="h-full flex-1 flex-col p-4 md:flex">
+            <ProjectPage data={formattedRequests} />
         </div>
     );
 }
