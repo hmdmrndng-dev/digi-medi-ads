@@ -1,17 +1,7 @@
 "use client"
 
 import { ColumnDef } from "@tanstack/react-table"
-import { MoreHorizontal } from "lucide-react"
-import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuLabel,
-    DropdownMenuSeparator,
-    DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
 
 export type RequestData = {
     id: string
@@ -22,10 +12,14 @@ export type RequestData = {
     storeCategory: string | null
     deliveryStatus: string
     orNumber: string | null
+    amountDue: number
     purchaseOrders: {
         products: {
+            id: string
+            productName: string
+            numOfOrderedStock: number
             amount: number | null;
-        }[]; // <--- Crucial: This must be an array!
+        }[];
     }[];
 }
 
@@ -95,53 +89,19 @@ export const columns: ColumnDef<RequestData>[] = [
         header: "OR Number",
     },
     {
-        header: "Total Amount",
-        id: "totalAmount",
+        accessorKey: "amountDue",
+        header: "Amount Due",
         cell: ({ row }) => {
-            const pos = row.original.purchaseOrders || [];
-
-            const total = pos.reduce((acc, po) => {
-                const poSum = po.products.reduce((sum, p) => sum + (p.amount || 0), 0);
-                return acc + poSum;
-            }, 0);
+            const amountDue = Number(row.getValue("amountDue") || 0)
 
             return (
                 <div className="font-medium">
                     {new Intl.NumberFormat("en-PH", {
                         style: "currency",
                         currency: "PHP",
-                    }).format(total)}
+                    }).format(amountDue)}
                 </div>
-            );
-        },
-    },
-    {
-        id: "actions",
-        enableSorting: false,
-        header: "Actions",
-        cell: ({ row }) => {
-            const request = row.original
-
-            return (
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" className="h-8 w-8 p-0">
-                            <span className="sr-only">Open menu</span>
-                            <MoreHorizontal className="h-4 w-4" />
-                        </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                        <DropdownMenuItem
-                            onClick={() => navigator.clipboard.writeText(request.projectCode)}
-                        >
-                            Copy Project Code
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem>View Details</DropdownMenuItem>
-                    </DropdownMenuContent>
-                </DropdownMenu>
             )
         },
-    },
+    }
 ]

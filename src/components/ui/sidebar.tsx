@@ -162,6 +162,9 @@ function Sidebar({
   collapsible?: "offcanvas" | "icon" | "none"
 }) {
   const { isMobile, state, openMobile, setOpenMobile } = useSidebar()
+  const [isHovered, setIsHovered] = React.useState(false)
+
+  const effectiveState = isHovered && state === "collapsed" ? "expanded" : state
 
   if (collapsible === "none") {
     return (
@@ -207,22 +210,28 @@ function Sidebar({
   return (
     <div
       className="group peer hidden text-sidebar-foreground md:block"
-      data-state={state}
-      data-collapsible={state === "collapsed" ? collapsible : ""}
+      data-state={effectiveState}
+      data-collapsible={effectiveState === "collapsed" ? collapsible : ""}
       data-variant={variant}
       data-side={side}
       data-slot="sidebar"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
     >
       {/* This is what handles the sidebar gap on desktop */}
+      {/* Uses real `state` (not effectiveState) so layout doesn't shift on hover */}
       <div
         data-slot="sidebar-gap"
         className={cn(
-          "relative w-(--sidebar-width) bg-transparent transition-[width] duration-200 ease-linear",
-          "group-data-[collapsible=offcanvas]:w-0",
+          "relative bg-transparent transition-[width] duration-200 ease-linear",
           "group-data-[side=right]:rotate-180",
-          variant === "floating" || variant === "inset"
-            ? "group-data-[collapsible=icon]:w-[calc(var(--sidebar-width-icon)+(--spacing(4)))]"
-            : "group-data-[collapsible=icon]:w-(--sidebar-width-icon)"
+          state === "collapsed" && collapsible === "offcanvas"
+            ? "w-0"
+            : state === "collapsed" && collapsible === "icon"
+              ? variant === "floating" || variant === "inset"
+                ? "w-[calc(var(--sidebar-width-icon)+(--spacing(4)))]"
+                : "w-(--sidebar-width-icon)"
+              : "w-(--sidebar-width)"
         )}
       />
       <div

@@ -32,17 +32,24 @@ import {
     DropdownMenuContent,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import {
+    HoverCard,
+    HoverCardContent,
+    HoverCardTrigger,
+} from "@/components/ui/hover-card"
 
 interface DataTableProps<TData, TValue> {
     columns: ColumnDef<TData, TValue>[]
     data: TData[]
     searchKey?: string
+    rowHoverContent?: (row: TData) => React.ReactNode
 }
 
 export function DataTable<TData, TValue>({
     columns,
     data,
     searchKey = "projectCode",
+    rowHoverContent,
 }: DataTableProps<TData, TValue>) {
     const [sorting, setSorting] = React.useState<SortingState>([])
     const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
@@ -149,21 +156,50 @@ export function DataTable<TData, TValue>({
                     </TableHeader>
                     <TableBody>
                         {table.getRowModel().rows?.length ? (
-                            table.getRowModel().rows.map((row) => (
-                                <TableRow
-                                    key={row.id}
-                                    data-state={row.getIsSelected() && "selected"}
-                                >
-                                    {row.getVisibleCells().map((cell) => (
-                                        <TableCell key={cell.id}>
-                                            {flexRender(
-                                                cell.column.columnDef.cell,
-                                                cell.getContext()
-                                            )}
-                                        </TableCell>
-                                    ))}
-                                </TableRow>
-                            ))
+                            table.getRowModel().rows.map((row) => {
+                                const hoverContent = rowHoverContent?.(row.original)
+
+                                if (!hoverContent) {
+                                    return (
+                                        <TableRow
+                                            key={row.id}
+                                            data-state={row.getIsSelected() && "selected"}
+                                        >
+                                            {row.getVisibleCells().map((cell) => (
+                                                <TableCell key={cell.id}>
+                                                    {flexRender(
+                                                        cell.column.columnDef.cell,
+                                                        cell.getContext()
+                                                    )}
+                                                </TableCell>
+                                            ))}
+                                        </TableRow>
+                                    )
+                                }
+
+                                return (
+                                    <HoverCard key={row.id} openDelay={150} closeDelay={100}>
+                                        <HoverCardTrigger asChild>
+                                            <TableRow
+                                                data-state={row.getIsSelected() && "selected"}
+                                                className="cursor-pointer"
+                                            >
+                                                {row.getVisibleCells().map((cell) => (
+                                                    <TableCell key={cell.id}>
+                                                        {flexRender(
+                                                            cell.column.columnDef.cell,
+                                                            cell.getContext()
+                                                        )}
+                                                    </TableCell>
+                                                ))}
+                                            </TableRow>
+                                        </HoverCardTrigger>
+                                        <HoverCardContent align="start" className="w-96 space-y-2">
+                                            {hoverContent}
+                                        </HoverCardContent>
+                                    </HoverCard>
+                                )
+                            })
                         ) : (
                             <TableRow>
                                 <TableCell

@@ -23,7 +23,7 @@ import { navData as data } from "@/config/menu"
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
-    <Sidebar collapsible="icon" {...props}>
+    <Sidebar collapsible="icon" className="z-99"{...props}>
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>

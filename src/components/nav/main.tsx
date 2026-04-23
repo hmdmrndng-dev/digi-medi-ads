@@ -9,11 +9,6 @@ import {
     CollapsibleTrigger,
 } from "@/components/ui/collapsible"
 import {
-    HoverCard,
-    HoverCardContent,
-    HoverCardTrigger,
-} from "@/components/ui/hover-card"
-import {
     SidebarGroup,
     SidebarGroupLabel,
     SidebarMenu,
@@ -41,7 +36,7 @@ export function NavMain({
         }[]
     }[]
 }) {
-    const { state, isMobile, setOpenMobile } = useSidebar()
+    const { isMobile, setOpenMobile } = useSidebar()
 
     const handleNavClick = React.useCallback(() => {
         if (isMobile) {
@@ -63,63 +58,6 @@ export function NavMain({
                 {items.map((item) => {
                     const hasSubItems = item.items && item.items.length > 0
 
-                    // --------------------------------------------------------
-                    // GOOGLE-STYLE FLYOUT CARD (When Sidebar is Closed)
-                    // --------------------------------------------------------
-                    if (state === "collapsed" && !isMobile) {
-                        return (
-                            <SidebarMenuItem key={item.title}>
-                                {hasSubItems ? (
-                                    <HoverCard openDelay={0} closeDelay={100}>
-                                        <HoverCardTrigger asChild>
-                                            {/* We remove the tooltip here so it doesn't overlap with our custom card */}
-                                            <SidebarMenuButton>
-                                                {item.icon && <item.icon />}
-                                                <span>{item.title}</span>
-                                            </SidebarMenuButton>
-                                        </HoverCardTrigger>
-
-                                        <HoverCardContent
-                                            side="right"
-                                            align="start"
-                                            sideOffset={16}
-                                            className="w-48 p-2 shadow-lg"
-                                        >
-                                            {/* Card Header (Title of the group) */}
-                                            <div className="px-2 pb-2 mb-2 border-b text-sm font-semibold text-foreground">
-                                                {item.title}
-                                            </div>
-
-                                            {/* Card Sub-items */}
-                                            <div className="flex flex-col gap-1">
-                                                {item.items!.map((subItem) => (
-                                                    <Link
-                                                        key={subItem.title}
-                                                        href={subItem.url}
-                                                        onClick={handleNavClick}
-                                                        className="block px-2 py-1.5 text-sm rounded-md hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
-                                                    >
-                                                        {subItem.title}
-                                                    </Link>
-                                                ))}
-                                            </div>
-                                        </HoverCardContent>
-                                    </HoverCard>
-                                ) : (
-                                    <SidebarMenuButton asChild tooltip={item.title}>
-                                        <Link href={item.url} onClick={handleNavClick}>
-                                            {item.icon && <item.icon />}
-                                            <span>{item.title}</span>
-                                        </Link>
-                                    </SidebarMenuButton>
-                                )}
-                            </SidebarMenuItem>
-                        )
-                    }
-
-                    // --------------------------------------------------------
-                    // ACCORDION MENU (When Sidebar is Open)
-                    // --------------------------------------------------------
                     return (
                         <Collapsible
                             key={item.title}
